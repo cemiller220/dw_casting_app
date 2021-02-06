@@ -58,34 +58,55 @@ export default {
                         {name: 'name30', status: 'waitlist'}]
                 }
             ],
-            changeLog: [{
-                date: new Date().toDateString(),
-                changes: [
-                    {name: 'name1', type: 'Added', piece: 'Domino'},
-                    {name: 'name4', type: 'Dropped', piece: 'Domino'}
-                    ]
-            }]
+            changeLog: [],
+            currentView: 'cast-list'
         }
     },
     mutations: {
-        addFromWaitlist(state, payload) {
-            state.castList[payload.pieceIndex].cast[payload.dancerIndex].status = 'cast';
+        changeStatus(state, payload) {
+            if (payload.dancerIndex >= 0) {
+                state.castList[payload.pieceIndex].cast[payload.dancerIndex].status = payload.newStatus;
+            } else {
+                state.castList[payload.pieceIndex].cast.push({name: payload.dancerName, status: payload.newStatus})
+            }
         },
         dropFromPiece(state, payload) {
             state.castList[payload.pieceIndex].cast.splice(payload.dancerIndex, 1)
+        },
+        addToChangeLog(state, payload) {
+            if (payload.dateIndex >= 0) {
+                state.changeLog[payload.dateIndex].changes.unshift(payload.changeInfo)
+            } else {
+                state.changeLog.unshift({date: new Date().toDateString(), changes: [payload.changeInfo]})
+            }
+        },
+        removeFromChangeLog(state, payload) {
+            state.changeLog[payload.dateIndex].changes.splice(payload.changeIndex, 1);
+            if (state.changeLog[payload.dateIndex].changes.length === 0) {
+                state.changeLog.splice(payload.dateIndex, 1);
+            }
+        },
+        changeView(state) {
+            if (state.currentView === 'change-log') {
+                state.currentView = 'cast-list';
+            } else if (state.currentView === 'cast-list') {
+                state.currentView = 'change-log';
+            }
         }
     },
     actions: {
         changeDancerStatus(context, payload) {
+            // change status in castList
             const pieceIndex = context.getters.castList.map((piece) => {return piece.name}).indexOf(payload.piece);
             const dancerIndex = context.getters.castList[pieceIndex].cast
                 .map((dancer) => {return dancer.name})
                 .indexOf(payload.dancerName);
 
             if (payload.changeType === 'add') {
-                context.commit('addFromWaitlist', {
+                context.commit('changeStatus', {
                     pieceIndex,
-                    dancerIndex
+                    dancerIndex,
+                    newStatus: 'cast'
                 })
             } else if (payload.changeType === 'drop') {
                 context.commit('dropFromPiece', {
@@ -93,6 +114,53 @@ export default {
                     dancerIndex
                 })
             }
+
+            // add change to change log
+            const currentDate = new Date().toDateString();
+            const dateIndex = context.getters.changeLog.map((changeDate) => {return changeDate.date}).indexOf(currentDate);
+            const changeInfo = {name: payload.dancerName, type: payload.changeType, piece: payload.piece};
+            context.commit('addToChangeLog', {
+                changeInfo,
+                dateIndex
+            })
+        },
+        undoChange(context, payload) {
+            const pieceIndex = context.getters.castList
+                .map((piece) => {return piece.name})
+                .indexOf(payload.piece);
+
+            if (payload.type === 'add') {
+                // undo adding from waitlist = put back on waitlist
+                const dancerIndex = context.getters.castList[pieceIndex].cast
+                    .map((dancer) => {return dancer.name})
+                    .indexOf(payload.dancerName);
+
+                context.commit('changeStatus', {
+                    pieceIndex,
+                    dancerIndex,
+                    newStatus: 'waitlist'
+                });
+            } else {
+                // undo dropping from piece = put back in piece (but they're not there anymore)
+                context.commit('changeStatus', {
+                    pieceIndex,
+                    dancerIndex: -1,
+                    newStatus: 'cast',
+                    dancerName: payload.dancerName,
+
+                });
+            }
+
+            const dateIndex = context.getters.changeLog
+                .map((dateChanges) => {return dateChanges.date})
+                .indexOf(payload.date);
+            const changeIndex = context.getters.changeLog[dateIndex].changes
+                .map((change) => {return change.piece + change.type + change.name})
+                .indexOf(payload.piece + payload.type + payload.dancerName);
+            context.commit('removeFromChangeLog', {dateIndex, changeIndex})
+        },
+        changeView(context) {
+            context.commit('changeView');
         }
     },
     getters: {
@@ -119,6 +187,9 @@ export default {
         },
         changeLog(state) {
             return state.changeLog;
+        },
+        currentView(state) {
+            return state.currentView;
         }
     }
 }

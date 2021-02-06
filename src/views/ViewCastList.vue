@@ -2,7 +2,7 @@
     <base-card>
         <div class="row text-center">
             <div class="col-md-12">
-                <h1>Cast List</h1>
+                <h1>{{title}}</h1>
             </div>
         </div>
         <div class="row justify-content-center">
@@ -32,7 +32,7 @@
         </div>
     </base-card>
     <base-card>
-        <component :is="currentComponent" v-bind="currentProps"></component>
+        <component :is="currentView" v-bind="currentProps"></component>
     </base-card>
     <div class="row justify-content-center">
         <div class="col-auto">
@@ -45,7 +45,7 @@
 <script>
     import BaseCard from "../components/UI/BaseCard";
     import BaseButton from "../components/UI/BaseButton";
-    import { mapGetters} from 'vuex';
+    import { mapGetters, mapActions } from 'vuex';
     import CastList from "../components/cast_list/CastList";
     import ChangeLog from "../components/cast_list/ChangeLog";
 
@@ -54,13 +54,12 @@
         components: {CastList, BaseButton, BaseCard, ChangeLog},
         data() {
             return {
-                currentComponent: 'cast-list',
                 filter_dancer_name: '',
                 filter_piece_name: ''
             }
         },
         computed: {
-            ...mapGetters('cast_list', ['castList', 'pieces', 'dancers']),
+            ...mapGetters('cast_list', ['castList', 'pieces', 'dancers', 'currentView']),
             filteredCastList() {
                 let filteredCastList = JSON.parse(JSON.stringify(this.castList));
 
@@ -84,28 +83,30 @@
                 return filteredCastList;
             },
             currentProps() {
-                if (this.currentComponent === 'cast-list') {
+                if (this.currentView === 'cast-list') {
                     return {filteredCastList: this.filteredCastList}
                 }
                 return {};
             },
             changeViewText() {
-                if (this.currentComponent === 'change-log') {
+                if (this.currentView === 'change-log') {
                     return 'Cast List';
-                } else if (this.currentComponent === 'cast-list') {
+                } else if (this.currentView === 'cast-list') {
                     return 'Change Log';
+                }
+                return '';
+            },
+            title() {
+                if (this.currentView === 'change-log') {
+                    return 'Change Log';
+                } else if (this.currentView === 'cast-list') {
+                    return 'Cast List';
                 }
                 return '';
             }
         },
         methods: {
-            changeView() {
-                if (this.currentComponent === 'change-log') {
-                    this.currentComponent = 'cast-list';
-                } else if (this.currentComponent === 'cast-list') {
-                    this.currentComponent = 'change-log';
-                }
-            }
+            ...mapActions('cast_list', ['changeView'])
         }
     }
 </script>

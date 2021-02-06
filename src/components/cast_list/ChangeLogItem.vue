@@ -1,29 +1,45 @@
 <template>
     <div class="style-alert" :class="logStyleClass">
-        {{ changeDetails.type }}
+        {{ typeStr }}
         <strong>{{ changeDetails.name }}</strong>
         {{ toFrom }}
         <strong>{{ changeDetails.piece }}</strong>
-        <base-badge title="Undo" class="float-end"></base-badge>
+        <base-badge title="Undo" class="float-end" @click="undoCurrentChange"></base-badge>
     </div>
 </template>
 
 <script>
     import BaseBadge from "../UI/BaseBadge";
+    import { mapActions } from 'vuex';
     export default {
         name: "ChangeLogItem",
-        props: ['changeDetails'],
+        props: ['changeDetails', 'date'],
         components: {BaseBadge},
         computed: {
+            typeStr() {
+                return this.changeDetails.type === 'add' ? 'Added' : 'Dropped';
+            },
             toFrom() {
-                return this.changeDetails.type === 'Added' ? 'to' : 'from';
+                return this.changeDetails.type === 'add' ? 'to' : 'from';
             },
             logStyleClass() {
-                if (this.changeDetails.type === 'Added') {
+                if (this.changeDetails.type === 'add') {
                     return 'alert-success'
                 } else {
                     return 'alert-danger'
                 }
+            }
+        },
+        methods: {
+            ...mapActions('cast_list', ['undoChange', 'changeView']),
+            undoCurrentChange() {
+                this.undoChange({
+                    date: this.date,
+                    piece: this.changeDetails.piece,
+                    type: this.changeDetails.type,
+                    dancerName: this.changeDetails.name
+                });
+                this.changeView();
             }
         }
     }
