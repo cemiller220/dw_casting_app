@@ -50,46 +50,42 @@
     import BaseCard from "../components/UI/BaseCard";
     import BaseButton from "../components/UI/BaseButton";
     import CastListGroup from "../components/cast_list/CastListGroup";
-    import { mapGetters } from 'vuex';
+    import { mapGetters} from 'vuex';
 
     export default {
         name: "ViewCastList",
         components: {CastListGroup, BaseButton, BaseCard},
         data() {
             return {
-                filteredCastList: [],
                 filter_dancer_name: '',
                 filter_piece_name: ''
             }
         },
         computed: {
             ...mapGetters('cast_list', ['castList', 'pieces', 'dancers']),
-        },
-        methods: {
-            filterCastList() {
-                this.filteredCastList = JSON.parse(JSON.stringify(this.castList));
+            filteredCastList() {
+                let filteredCastList = JSON.parse(JSON.stringify(this.castList));
 
                 if (this.filter_piece_name === '' && this.filter_dancer_name !== '') {
                     // only dancer filter
-                    this.filteredCastList = this.filteredCastList.map((dance) => {
+                    filteredCastList = filteredCastList.map((dance) => {
                         dance.cast = dance.cast.filter(dancer => dancer.toLowerCase().startsWith(this.filter_dancer_name.toLowerCase()));
                         return dance
                     }).filter(dance => dance.cast.length !== 0);
                 } else if (this.filter_dancer_name === '' && this.filter_piece_name !== '') {
                     // only piece filter
-                    this.filteredCastList = this.castList.filter(dance => dance.name.toLowerCase().startsWith(this.filter_piece_name.toLowerCase()));
+                    filteredCastList = this.castList.filter(dance => dance.name.toLowerCase().startsWith(this.filter_piece_name.toLowerCase()));
                 } else if (this.filter_dancer_name !== '' && this.filter_piece_name !== '') {
                     // both filters
-                    this.filteredCastList = this.filteredCastList.map((dance) => {
+                    filteredCastList = filteredCastList.map((dance) => {
                         dance.cast = dance.cast.filter(dancer => dancer.toLowerCase().startsWith(this.filter_dancer_name.toLowerCase()));
                         return dance
                     }).filter(dance => dance.cast.length !== 0 && dance.name.toLowerCase().startsWith(this.filter_piece_name.toLowerCase()));
                 }
-            }
+
+                return filteredCastList;
+            },
         },
-        created() {
-            this.filterCastList();
-        }
     }
 </script>
 

@@ -61,10 +61,32 @@ export default {
         }
     },
     mutations: {
-
+        addFromWaitlist(state, payload) {
+            state.castList[payload.pieceIndex].cast[payload.dancerIndex].status = 'cast';
+        },
+        dropFromPiece(state, payload) {
+            state.castList[payload.pieceIndex].cast.splice(payload.dancerIndex, 1)
+        }
     },
     actions: {
+        changeDancerStatus(context, payload) {
+            const pieceIndex = context.getters.castList.map((piece) => {return piece.name}).indexOf(payload.piece);
+            const dancerIndex = context.getters.castList[pieceIndex].cast
+                .map((dancer) => {return dancer.name})
+                .indexOf(payload.dancerName);
 
+            if (payload.changeType === 'add') {
+                context.commit('addFromWaitlist', {
+                    pieceIndex,
+                    dancerIndex
+                })
+            } else if (payload.changeType === 'drop') {
+                context.commit('dropFromPiece', {
+                    pieceIndex,
+                    dancerIndex
+                })
+            }
+        }
     },
     getters: {
         castList(state) {

@@ -7,16 +7,11 @@
             </div>
             <div class="card-body">
                 <ul class="list-group list my--3">
-                    <li class="list-group-item"
-                        :class="{'list-group-item-danger': dancer.status === 'waitlist'}"
-                        v-for="dancer in dance.cast"
-                        :key="dance.name + dancer">
-                        {{ dancer.name }}
-                        <base-badge :title="badgeTitle(dancer.status)"
-                                    :color="badgeColor(dancer.status)"
-                                    class="float-end">
-                        </base-badge>
-                    </li>
+                    <cast-list-item v-for="dancer in dance.cast"
+                                    :dancer="dancer"
+                                    :piece="dance.name"
+                                    :key="dance.name + dancer.name">
+                    </cast-list-item>
                 </ul>
             </div>
         </div>
@@ -24,20 +19,11 @@
 </template>
 
 <script>
-    import BaseBadge from "../UI/BaseBadge";
-
+    import CastListItem from "./CastListItem";
     export default {
         name: "CastListGroup",
-        props: ['dance'],
-        components: {BaseBadge},
-        methods: {
-            badgeTitle(status) {
-                return status === 'cast' ? 'Drop' : 'Add'
-            },
-            badgeColor(status) {
-                return status === 'cast' ? 'red' : 'green'
-            }
-        }
+        components: {CastListItem},
+        props: ['dance']
     }
 </script>
 
