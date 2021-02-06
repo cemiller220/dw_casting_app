@@ -1,4 +1,5 @@
 import { createStore } from 'vuex'
+import cast_list from "./cast_list";
 
 export default createStore({
   state: {
@@ -8,5 +9,6 @@ export default createStore({
   actions: {
   },
   modules: {
+    cast_list: cast_list
   }
 })
