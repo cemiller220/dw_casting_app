@@ -1,30 +1,26 @@
 <template>
-  <div id="nav">
-    <router-link to="/">Home</router-link> |
-    <router-link to="/show_order">Show Order</router-link>
-  </div>
+  <the-header></the-header>
   <router-view/>
 </template>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
+  @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap");
 
-#nav {
-  padding: 30px;
-}
+  * {
+    box-sizing: border-box;
+  }
 
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
+  html {
+    font-family: "Roboto", sans-serif;
+  }
 
-#nav a.router-link-exact-active {
-  color: #42b983;
-}
+  body {
+    margin: 0;
+  }
 </style>
+<script>
+  import TheHeader from "./components/layout/TheHeader";
+  export default {
+    components: {TheHeader}
+  }
+</script>
