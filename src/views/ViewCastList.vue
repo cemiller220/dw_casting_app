@@ -32,16 +32,12 @@
         </div>
     </base-card>
     <base-card>
-        <div class="row justify-content-center">
-            <cast-list-group v-for="dance in filteredCastList" :key="dance.name" class="dance-card"
-                             :dance="dance">
-            </cast-list-group>
-        </div>
+        <component :is="currentComponent" v-bind="currentProps"></component>
     </base-card>
     <div class="row justify-content-center">
         <div class="col-auto">
             <base-button>Reset Add/Drop</base-button>
-            <base-button>View Change Log</base-button>
+            <base-button @click="changeView">View {{ changeViewText }}</base-button>
         </div>
     </div>
 </template>
@@ -49,14 +45,16 @@
 <script>
     import BaseCard from "../components/UI/BaseCard";
     import BaseButton from "../components/UI/BaseButton";
-    import CastListGroup from "../components/cast_list/CastListGroup";
     import { mapGetters} from 'vuex';
+    import CastList from "../components/cast_list/CastList";
+    import ChangeLog from "../components/cast_list/ChangeLog";
 
     export default {
         name: "ViewCastList",
-        components: {CastListGroup, BaseButton, BaseCard},
+        components: {CastList, BaseButton, BaseCard, ChangeLog},
         data() {
             return {
+                currentComponent: 'cast-list',
                 filter_dancer_name: '',
                 filter_piece_name: ''
             }
@@ -85,12 +83,33 @@
 
                 return filteredCastList;
             },
+            currentProps() {
+                if (this.currentComponent === 'cast-list') {
+                    return {filteredCastList: this.filteredCastList}
+                }
+                return {};
+            },
+            changeViewText() {
+                if (this.currentComponent === 'change-log') {
+                    return 'Cast List';
+                } else if (this.currentComponent === 'cast-list') {
+                    return 'Change Log';
+                }
+                return '';
+            }
         },
+        methods: {
+            changeView() {
+                if (this.currentComponent === 'change-log') {
+                    this.currentComponent = 'cast-list';
+                } else if (this.currentComponent === 'cast-list') {
+                    this.currentComponent = 'change-log';
+                }
+            }
+        }
     }
 </script>
 
 <style scoped>
-    .dance-card {
-        padding: 12px;
-    }
+
 </style>

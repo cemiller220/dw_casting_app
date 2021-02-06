@@ -27,6 +27,10 @@
         cursor: pointer;
     }
 
+    span:hover {
+        background-color: #a9a9a9;
+    }
+
     .red {
         background-color: #740C11;
         color: white;

@@ -57,7 +57,14 @@ export default {
                         {name: 'name17', status: 'cast'},
                         {name: 'name30', status: 'waitlist'}]
                 }
-            ]
+            ],
+            changeLog: [{
+                date: new Date().toDateString(),
+                changes: [
+                    {name: 'name1', type: 'Added', piece: 'Domino'},
+                    {name: 'name4', type: 'Dropped', piece: 'Domino'}
+                    ]
+            }]
         }
     },
     mutations: {
@@ -109,6 +116,9 @@ export default {
                 piece_list.push(piece.name);
             }
             return piece_list;
+        },
+        changeLog(state) {
+            return state.changeLog;
         }
     }
 }
