@@ -183,5 +183,4 @@ export default {
 }
 
 
-// TODO: Setup changing seasons
 // TODO: Start show order page

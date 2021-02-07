@@ -6,13 +6,15 @@ export default createStore({
   state() {
     return {
       season: '',
-      city: ''
+      city: '',
+      possible_seasons: {'nyc': [], 'boston': []}
     }
   },
   mutations: {
     setCitySeason(state, payload) {
       state.city = payload.city;
       state.season = payload.season;
+      state.possible_seasons = payload.possible_seasons;
     }
   },
   actions: {
@@ -45,6 +47,7 @@ export default createStore({
       context.dispatch('updateCurrentPageData', {current_path: router.currentRoute.value.path});
     },
     async changeCitySeason(context, payload) {
+      payload.possible_seasons = context.getters.possible_seasons;
       context.commit('setCitySeason', payload);
 
       // send config to firebase
@@ -66,6 +69,15 @@ export default createStore({
     },
     season(state) {
       return state.season;
+    },
+    possible_seasons(state) {
+      return state.possible_seasons;
+    },
+    nyc_seasons(state) {
+      return state.possible_seasons.nyc;
+    },
+    boston_seasons(state) {
+      return state.possible_seasons.boston;
     }
   },
   modules: {

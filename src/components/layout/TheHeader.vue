@@ -32,9 +32,7 @@
                     <select class="form-select form-control me-2 season-select" aria-label="season"
                              @change="updateConfig('season', $event.target.value)">
                         <option value :selected="currentSeason === ''">Choose a Season</option>
-                        <option value="14" :selected="currentSeason === '14'">Season 14</option>
-                        <option value="15" :selected="currentSeason === '15'">Season 15</option>
-                        <option value="16" :selected="currentSeason === '16'">Season 16</option>
+                        <option v-for="season_num in seasonOptions" :key="currentCity + season_num" :value="season_num" :selected="currentSeason === season_num">Season {{ season_num }}</option>
                     </select>
                 </form>
             </div>
@@ -52,12 +50,21 @@
           }
         },
         computed: {
-            ...mapGetters(['city', 'season']),
+            ...mapGetters(['city', 'season', 'nyc_seasons', 'boston_seasons']),
             currentCity() {
                 return this.city;
             },
             currentSeason() {
+                console.log(this.season);
                 return this.season;
+            },
+            seasonOptions() {
+                if (this.currentCity === 'nyc') {
+                    return this.nyc_seasons;
+                } else {
+                    return this.boston_seasons;
+                }
+
             },
             runCastingActive() {
                 return this.$route.path === '/run_casting';
@@ -72,6 +79,7 @@
         methods: {
             ...mapActions(['changeCitySeason']),
             updateConfig(field, value) {
+                console.log('update method');
                 if (field === 'city') {
                     this.changeCitySeason({city: value, season: this.currentSeason})
                 } else if (field === 'season') {
