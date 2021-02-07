@@ -59,34 +59,60 @@
             }
         },
         computed: {
-            ...mapGetters('cast_list', ['castList', 'pieces', 'dancers', 'currentView']),
+            ...mapGetters('cast_list', ['castList', 'pieces', 'dancers', 'changeLog', 'currentView']),
             filteredCastList() {
                 let filteredCastList = JSON.parse(JSON.stringify(this.castList));
 
                 if (this.filter_piece_name === '' && this.filter_dancer_name !== '') {
                     // only dancer filter
                     filteredCastList = filteredCastList.map((dance) => {
-                        dance.cast = dance.cast.filter(dancer => dancer.toLowerCase().startsWith(this.filter_dancer_name.toLowerCase()));
+                        dance.cast = dance.cast.filter(dancer => dancer.name.toLowerCase().startsWith(this.filter_dancer_name.toLowerCase()));
                         return dance
                     }).filter(dance => dance.cast.length !== 0);
                 } else if (this.filter_dancer_name === '' && this.filter_piece_name !== '') {
                     // only piece filter
-                    filteredCastList = this.castList.filter(dance => dance.name.toLowerCase().startsWith(this.filter_piece_name.toLowerCase()));
+                    filteredCastList = filteredCastList.filter(dance => dance.name.toLowerCase().startsWith(this.filter_piece_name.toLowerCase()));
                 } else if (this.filter_dancer_name !== '' && this.filter_piece_name !== '') {
                     // both filters
                     filteredCastList = filteredCastList.map((dance) => {
-                        dance.cast = dance.cast.filter(dancer => dancer.toLowerCase().startsWith(this.filter_dancer_name.toLowerCase()));
+                        dance.cast = dance.cast.filter(dancer => dancer.name.toLowerCase().startsWith(this.filter_dancer_name.toLowerCase()));
                         return dance
                     }).filter(dance => dance.cast.length !== 0 && dance.name.toLowerCase().startsWith(this.filter_piece_name.toLowerCase()));
                 }
 
                 return filteredCastList;
             },
+            filteredChangeLog() {
+                let filteredChangeLog = JSON.parse(JSON.stringify(this.changeLog));
+
+                if (this.filter_piece_name === '' && this.filter_dancer_name !== '') {
+                    // only dancer filter
+                    filteredChangeLog = filteredChangeLog.map((changeList) => {
+                        changeList.changes = changeList.changes.filter(change => change.name.toLowerCase().startsWith(this.filter_dancer_name.toLowerCase()));
+                        return changeList
+                    }).filter(changeList => changeList.changes.length !== 0);
+                } else if (this.filter_dancer_name === '' && this.filter_piece_name !== '') {
+                    // only piece filter
+                    filteredChangeLog = filteredChangeLog.map((changeList) => {
+                        changeList.changes = changeList.changes.filter(change => change.piece.toLowerCase().startsWith(this.filter_piece_name.toLowerCase()));
+                        return changeList
+                    }).filter(changeList => changeList.changes.length !== 0);
+                } else if (this.filter_dancer_name !== '' && this.filter_piece_name !== '') {
+                    // both filters
+                    filteredChangeLog = filteredChangeLog.map((changeList) => {
+                        changeList.changes = changeList.changes.filter(change => change.name.toLowerCase().startsWith(this.filter_dancer_name.toLowerCase()) && change.piece.toLowerCase().startsWith(this.filter_piece_name.toLowerCase()));
+                        return changeList
+                    }).filter(changeList => changeList.changes.length !== 0);
+                }
+
+                return filteredChangeLog;
+            },
             currentProps() {
                 if (this.currentView === 'cast-list') {
                     return {filteredCastList: this.filteredCastList}
+                } else {
+                    return {filteredChangeLog: this.filteredChangeLog};
                 }
-                return {};
             },
             changeViewText() {
                 if (this.currentView === 'change-log') {

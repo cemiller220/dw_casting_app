@@ -172,7 +172,7 @@ export default {
             for (let dance of state.castList) {
                 for (let dancer of dance.cast) {
                     if (dancer_list.indexOf(dancer) === -1) {
-                        dancer_list.push(dancer);
+                        dancer_list.push(dancer.name);
                     }
                 }
             }
@@ -193,3 +193,7 @@ export default {
         }
     }
 }
+
+// TODO NEXT: Filter change log
+// TODO play around with single page side by side layout
+// TODO link firebase (research other backends?)
