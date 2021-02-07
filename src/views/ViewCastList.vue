@@ -49,7 +49,7 @@
 
         <div class="row justify-content-center">
             <div class="col-auto">
-                <base-button>Reset Add/Drop</base-button>
+                <base-button @click="resetAll">Reset Add/Drop</base-button>
             </div>
         </div>
     </div>
@@ -58,7 +58,7 @@
 <script>
     import BaseCard from "../components/UI/BaseCard";
     import BaseButton from "../components/UI/BaseButton";
-    import { mapGetters } from 'vuex';
+    import { mapGetters, mapActions } from 'vuex';
     import CastList from "../components/cast_list/CastList";
     import ChangeLog from "../components/cast_list/ChangeLog";
 
@@ -120,6 +120,13 @@
 
                 return filteredChangeLog;
             }
+        },
+        methods: {
+            ...mapActions('cast_list', ['loadData', 'resetAll'])
+        },
+        created() {
+            this.loadData({node: 'cast_list', mutation: 'setCastList'});
+            this.loadData({node: 'change_log', mutation: 'setChangeLog'});
         }
     }
 </script>

@@ -4,7 +4,11 @@
         <strong>{{ changeDetails.name }}</strong>
         {{ toFrom }}
         <strong>{{ changeDetails.piece }}</strong>
-        <base-badge title="Undo" class="float-end" @click="undoCurrentChange"></base-badge>
+        <div class="row justify-content-end">
+            <div class="col-auto">
+                <base-badge title="Undo" @click="undoCurrentChange"></base-badge>
+            </div>
+        </div>
     </div>
 </template>
 

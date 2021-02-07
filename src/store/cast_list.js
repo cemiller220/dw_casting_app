@@ -2,66 +2,17 @@ export default {
     namespaced: true,
     state() {
         return {
-            castList: [
-                {
-                    name: 'Domino',
-                    choreographer: 'Claire Miller',
-                    time: {day: 'Sunday', time: 6},
-                    cast: [
-                        {name: 'name1', status: 'cast'},
-                        {name: 'name2', status: 'cast'},
-                        {name: 'name3', status: 'waitlist'}]
-                },
-                {
-                    name: 'As The Water',
-                    choreographer: 'Steph Lacy',
-                    time: {day: 'Tuesday', time: 9},
-                    cast: [
-                        {name: 'name4', status: 'cast'},
-                        {name: 'name5', status: 'cast'},
-                        {name: 'name3', status: 'cast'}]
-                },
-                {
-                    name: 'The Chain',
-                    choreographer: 'Alex Lorditch',
-                    time: {day: 'Sunday', time: 7},
-                    cast: [
-                        {name: 'name12', status: 'cast'},
-                        {name: 'name5', status: 'waitlist'},
-                        {name: 'name31', status: 'waitlist'}]
-                },
-                {
-                    name: 'Love So Soft',
-                    choreographer: 'Lissy Rosner',
-                    time: {day: 'Sunday', time: 8},
-                    cast: [
-                        {name: 'name31', status: 'cast'},
-                        {name: 'name12', status: 'cast'},
-                        {name: 'name4', status: 'cast'}]
-                },
-                {
-                    name: 'Sing',
-                    choreographer: 'Lisa Feit',
-                    time: {day: 'Tuesday', time: 9},
-                    cast: [
-                        {name: 'name17', status: 'cast'},
-                        {name: 'name20', status: 'cast'},
-                        {name: 'name30', status: 'waitlist'}]
-                },
-                {
-                    name: 'Bad Guy',
-                    choreographer: 'Morgan Markowicz',
-                    time: {day: 'Thursday', time: 8},
-                    cast: [
-                        {name: 'name40', status: 'cast'},
-                        {name: 'name17', status: 'cast'},
-                        {name: 'name30', status: 'waitlist'}]
-                }
-            ],
+            castList: [],
             changeLog: []
         }
     },
     mutations: {
+        setCastList(state, payload) {
+            state.castList = payload;
+        },
+        setChangeLog(state, payload) {
+            state.changeLog = payload || [];
+        },
         changeStatus(state, payload) {
             if (payload.dancerIndex >= 0) {
                 state.castList[payload.pieceIndex].cast[payload.dancerIndex].status = payload.newStatus;
@@ -87,7 +38,23 @@ export default {
         }
     },
     actions: {
-        changeDancerStatus(context, payload) {
+        async loadData(context, payload) {
+            // if (!payload.forceRefresh && !context.getters.shouldUpdate) {
+            //     return
+            // }
+
+            const response = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/nyc/season16/${payload.node}.json`);
+            const responseData = await response.json();
+
+            console.log(responseData);
+
+            if (!response.ok) {
+                throw new Error(responseData.message || 'Failed to fetch!');
+            }
+
+            context.commit(payload.mutation, responseData);
+        },
+        async changeDancerStatus(context, payload) {
             // change status in castList
             const pieceIndex = context.getters.castList.map((piece) => {return piece.name}).indexOf(payload.piece);
             const dancerIndex = context.getters.castList[pieceIndex].cast
@@ -107,6 +74,17 @@ export default {
                 })
             }
 
+            const response = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/nyc/season16/cast_list.json`, {
+                method: 'PUT',
+                body: JSON.stringify(context.getters.castList)
+            });
+
+            const responseData = await response.json();
+
+            if (!response.ok) {
+                throw new Error(responseData.message || 'Failed to send!');
+            }
+
             // add change to change log
             const currentDate = new Date().toDateString();
             const dateIndex = context.getters.changeLog.map((changeDate) => {return changeDate.date}).indexOf(currentDate);
@@ -114,9 +92,20 @@ export default {
             context.commit('addToChangeLog', {
                 changeInfo,
                 dateIndex
-            })
+            });
+
+            const response2 = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/nyc/season16/change_log.json`, {
+                method: 'PUT',
+                body: JSON.stringify(context.getters.changeLog)
+            });
+
+            const responseData2 = await response2.json();
+
+            if (!response2.ok) {
+                throw new Error(responseData2.message || 'Failed to send!');
+            }
         },
-        undoChange(context, payload) {
+        async undoChange(context, payload) {
             const pieceIndex = context.getters.castList
                 .map((piece) => {return piece.name})
                 .indexOf(payload.piece);
@@ -143,6 +132,17 @@ export default {
                 });
             }
 
+            const response = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/nyc/season16/cast_list.json`, {
+                method: 'PUT',
+                body: JSON.stringify(context.getters.castList)
+            });
+
+            const responseData = await response.json();
+
+            if (!response.ok) {
+                throw new Error(responseData.message || 'Failed to send!');
+            }
+
             const dateIndex = context.getters.changeLog
                 .map((dateChanges) => {return dateChanges.date})
                 .indexOf(payload.date);
@@ -150,9 +150,43 @@ export default {
                 .map((change) => {return change.piece + change.type + change.name})
                 .indexOf(payload.piece + payload.type + payload.dancerName);
             context.commit('removeFromChangeLog', {dateIndex, changeIndex})
+
+            const response2 = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/nyc/season16/change_log.json`, {
+                method: 'PUT',
+                body: JSON.stringify(context.getters.changeLog)
+            });
+
+            const responseData2 = await response2.json();
+
+            if (!response2.ok) {
+                throw new Error(responseData2.message || 'Failed to send!');
+            }
         },
-        changeView(context) {
-            context.commit('changeView');
+        async resetAll(context) {
+            await context.dispatch('loadData', {node: 'original_cast_list', mutation: 'setCastList'});
+
+            const response2 = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/nyc/season16/cast_list.json`, {
+                method: 'PUT',
+                body: JSON.stringify(context.getters.castList)
+            });
+
+            const responseData2 = await response2.json();
+
+            if (!response2.ok) {
+                throw new Error(responseData2.message || 'Failed to send!');
+            }
+
+            context.commit('setChangeLog', null);
+            const response3 = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/nyc/season16/change_log.json`, {
+                method: 'PUT',
+                body: JSON.stringify([])
+            });
+
+            const responseData3 = await response3.json();
+
+            if (!response3.ok) {
+                throw new Error(responseData3.message || 'Failed to send!');
+            }
         }
     },
     getters: {
@@ -163,7 +197,7 @@ export default {
             const dancer_list = [];
             for (let dance of state.castList) {
                 for (let dancer of dance.cast) {
-                    if (dancer_list.indexOf(dancer) === -1) {
+                    if (dancer_list.indexOf(dancer.name) === -1) {
                         dancer_list.push(dancer.name);
                     }
                 }
@@ -183,4 +217,4 @@ export default {
     }
 }
 
-// TODO link firebase (research other backends?)
+// TODO: refactor to fix code duplication
