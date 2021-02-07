@@ -1,5 +1,5 @@
 <template>
-    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12 justify-content-center">
+    <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 justify-content-center">
         <div class="card special-card-styles">
             <div class="card-header text-center">
                 <h5 class="h3 mb-0">{{ dance.name }}</h5>

@@ -31,7 +31,7 @@
             }
         },
         methods: {
-            ...mapActions('cast_list', ['undoChange', 'changeView']),
+            ...mapActions('cast_list', ['undoChange']),
             undoCurrentChange() {
                 this.undoChange({
                     date: this.date,
@@ -39,7 +39,6 @@
                     type: this.changeDetails.type,
                     dancerName: this.changeDetails.name
                 });
-                this.changeView();
             }
         }
     }

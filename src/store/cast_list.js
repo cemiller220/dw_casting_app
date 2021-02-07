@@ -58,8 +58,7 @@ export default {
                         {name: 'name30', status: 'waitlist'}]
                 }
             ],
-            changeLog: [],
-            currentView: 'cast-list'
+            changeLog: []
         }
     },
     mutations: {
@@ -84,13 +83,6 @@ export default {
             state.changeLog[payload.dateIndex].changes.splice(payload.changeIndex, 1);
             if (state.changeLog[payload.dateIndex].changes.length === 0) {
                 state.changeLog.splice(payload.dateIndex, 1);
-            }
-        },
-        changeView(state) {
-            if (state.currentView === 'change-log') {
-                state.currentView = 'cast-list';
-            } else if (state.currentView === 'cast-list') {
-                state.currentView = 'change-log';
             }
         }
     },
@@ -187,13 +179,8 @@ export default {
         },
         changeLog(state) {
             return state.changeLog;
-        },
-        currentView(state) {
-            return state.currentView;
         }
     }
 }
 
-// TODO NEXT: Filter change log
-// TODO play around with single page side by side layout
 // TODO link firebase (research other backends?)
