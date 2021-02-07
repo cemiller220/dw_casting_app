@@ -20,7 +20,15 @@
 </style>
 <script>
   import TheHeader from "./components/layout/TheHeader";
+  // import { mapActions } from 'vuex';
+
   export default {
-    components: {TheHeader}
+    components: {TheHeader},
+    methods: {
+      // ...mapActions(['loadConfig'])
+    },
+    beforeCreate() {
+      this.$store.dispatch('loadConfig');
+    }
   }
 </script>

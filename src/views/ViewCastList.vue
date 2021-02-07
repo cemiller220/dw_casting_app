@@ -73,8 +73,14 @@
         },
         computed: {
             ...mapGetters('cast_list', ['castList', 'pieces', 'dancers', 'changeLog']),
+            currentCastList() {
+                return this.castList;
+            },
+            currentChangeLog() {
+                return this.changeLog;
+            },
             filteredCastList() {
-                let filteredCastList = JSON.parse(JSON.stringify(this.castList));
+                let filteredCastList = JSON.parse(JSON.stringify(this.currentCastList));
 
                 if (this.filter_piece_name === '' && this.filter_dancer_name !== '') {
                     // only dancer filter
@@ -96,7 +102,7 @@
                 return filteredCastList;
             },
             filteredChangeLog() {
-                let filteredChangeLog = JSON.parse(JSON.stringify(this.changeLog));
+                let filteredChangeLog = JSON.parse(JSON.stringify(this.currentChangeLog));
 
                 if (this.filter_piece_name === '' && this.filter_dancer_name !== '') {
                     // only dancer filter

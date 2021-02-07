@@ -8,7 +8,7 @@ export default {
     },
     mutations: {
         setCastList(state, payload) {
-            state.castList = payload;
+            state.castList = payload || [];
         },
         setChangeLog(state, payload) {
             state.changeLog = payload || [];
@@ -42,10 +42,13 @@ export default {
             // if (!payload.forceRefresh && !context.getters.shouldUpdate) {
             //     return
             // }
+            const city = context.rootGetters.city;
+            const season = context.rootGetters.season;
 
-            const response = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/nyc/season16/${payload.node}.json`);
+            const response = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/${city}/season${season}/${payload.node}.json`);
             const responseData = await response.json();
 
+            console.log('load ' + payload.node + ' city ' + city + ' season ' + season);
             console.log(responseData);
 
             if (!response.ok) {
@@ -55,7 +58,10 @@ export default {
             context.commit(payload.mutation, responseData);
         },
         async uploadData(context, payload) {
-            const response = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/nyc/season16/${payload.node}.json`, {
+            const city = context.rootGetters.city;
+            const season = context.rootGetters.season;
+
+            const response = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/${city}/season${season}/${payload.node}.json`, {
                 method: 'PUT',
                 body: JSON.stringify(context.getters[payload.getter])
             });
@@ -161,17 +167,21 @@ export default {
                     }
                 }
             }
-            return dancer_list;
+            return dancer_list.sort();
         },
         pieces(state) {
             const piece_list = [];
             for (let piece of state.castList) {
                 piece_list.push(piece.name);
             }
-            return piece_list;
+            return piece_list.sort();
         },
         changeLog(state) {
             return state.changeLog;
         }
     }
 }
+
+
+// TODO: Setup changing seasons
+// TODO: Start show order page
