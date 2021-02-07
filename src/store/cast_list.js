@@ -54,6 +54,18 @@ export default {
 
             context.commit(payload.mutation, responseData);
         },
+        async uploadData(context, payload) {
+            const response = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/nyc/season16/${payload.node}.json`, {
+                method: 'PUT',
+                body: JSON.stringify(context.getters[payload.getter])
+            });
+
+            const responseData = await response.json();
+
+            if (!response.ok) {
+                throw new Error(responseData.message || 'Failed to send!');
+            }
+        },
         async changeDancerStatus(context, payload) {
             // change status in castList
             const pieceIndex = context.getters.castList.map((piece) => {return piece.name}).indexOf(payload.piece);
@@ -74,16 +86,8 @@ export default {
                 })
             }
 
-            const response = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/nyc/season16/cast_list.json`, {
-                method: 'PUT',
-                body: JSON.stringify(context.getters.castList)
-            });
-
-            const responseData = await response.json();
-
-            if (!response.ok) {
-                throw new Error(responseData.message || 'Failed to send!');
-            }
+            // upload here...
+            await context.dispatch('uploadData', {node: 'cast_list', getter: 'castList'});
 
             // add change to change log
             const currentDate = new Date().toDateString();
@@ -94,16 +98,7 @@ export default {
                 dateIndex
             });
 
-            const response2 = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/nyc/season16/change_log.json`, {
-                method: 'PUT',
-                body: JSON.stringify(context.getters.changeLog)
-            });
-
-            const responseData2 = await response2.json();
-
-            if (!response2.ok) {
-                throw new Error(responseData2.message || 'Failed to send!');
-            }
+            await context.dispatch('uploadData', {node: 'change_log', getter: 'changeLog'});
         },
         async undoChange(context, payload) {
             const pieceIndex = context.getters.castList
@@ -132,16 +127,7 @@ export default {
                 });
             }
 
-            const response = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/nyc/season16/cast_list.json`, {
-                method: 'PUT',
-                body: JSON.stringify(context.getters.castList)
-            });
-
-            const responseData = await response.json();
-
-            if (!response.ok) {
-                throw new Error(responseData.message || 'Failed to send!');
-            }
+            await context.dispatch('uploadData', {node: 'cast_list', getter: 'castList'});
 
             const dateIndex = context.getters.changeLog
                 .map((dateChanges) => {return dateChanges.date})
@@ -149,44 +135,17 @@ export default {
             const changeIndex = context.getters.changeLog[dateIndex].changes
                 .map((change) => {return change.piece + change.type + change.name})
                 .indexOf(payload.piece + payload.type + payload.dancerName);
-            context.commit('removeFromChangeLog', {dateIndex, changeIndex})
+            context.commit('removeFromChangeLog', {dateIndex, changeIndex});
 
-            const response2 = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/nyc/season16/change_log.json`, {
-                method: 'PUT',
-                body: JSON.stringify(context.getters.changeLog)
-            });
-
-            const responseData2 = await response2.json();
-
-            if (!response2.ok) {
-                throw new Error(responseData2.message || 'Failed to send!');
-            }
+            await context.dispatch('uploadData', {node: 'change_log', getter: 'changeLog'});
         },
         async resetAll(context) {
             await context.dispatch('loadData', {node: 'original_cast_list', mutation: 'setCastList'});
 
-            const response2 = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/nyc/season16/cast_list.json`, {
-                method: 'PUT',
-                body: JSON.stringify(context.getters.castList)
-            });
-
-            const responseData2 = await response2.json();
-
-            if (!response2.ok) {
-                throw new Error(responseData2.message || 'Failed to send!');
-            }
+            await context.dispatch('uploadData', {node: 'cast_list', getter: 'castList'});
 
             context.commit('setChangeLog', null);
-            const response3 = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/nyc/season16/change_log.json`, {
-                method: 'PUT',
-                body: JSON.stringify([])
-            });
-
-            const responseData3 = await response3.json();
-
-            if (!response3.ok) {
-                throw new Error(responseData3.message || 'Failed to send!');
-            }
+            await context.dispatch('uploadData', {node: 'change_log', getter: 'changeLog'});
         }
     },
     getters: {
@@ -216,5 +175,3 @@ export default {
         }
     }
 }
-
-// TODO: refactor to fix code duplication
