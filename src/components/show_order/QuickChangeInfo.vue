@@ -1,7 +1,7 @@
 <template>
     <div class="row justify-content-center">
         <div class="col-11 alert alert-dark text-center shorten-dance-name">
-            Quick Changes <strong style="font-size: 1.3rem">{{ keyName.toUpperCase() }}</strong>
+            Quick Changes <strong>{{ keyName.toUpperCase() }}</strong>
             {{ selected_piece }}
         </div>
     </div>
