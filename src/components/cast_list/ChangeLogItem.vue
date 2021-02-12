@@ -6,7 +6,7 @@
         <strong>{{ changeDetails.piece }}</strong>
         <div class="row justify-content-end">
             <div class="col-auto">
-                <base-badge title="Undo" @click="undoCurrentChange"></base-badge>
+                <base-badge title="Undo" :clickable="true" @click="undoCurrentChange"></base-badge>
             </div>
         </div>
     </div>

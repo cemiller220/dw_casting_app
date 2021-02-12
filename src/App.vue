@@ -1,6 +1,8 @@
 <template>
   <the-header></the-header>
-  <router-view/>
+  <div class="wrapper">
+    <router-view/>
+  </div>
 </template>
 
 <style>
@@ -17,16 +19,17 @@
   body {
     margin: 0;
   }
+
+  .wrapper {
+    max-width: 90%;
+    margin: 0 auto;
+  }
 </style>
 <script>
   import TheHeader from "./components/layout/TheHeader";
-  // import { mapActions } from 'vuex';
 
   export default {
     components: {TheHeader},
-    methods: {
-      // ...mapActions(['loadConfig'])
-    },
     beforeCreate() {
       this.$store.dispatch('loadConfig');
     }

@@ -1,5 +1,5 @@
 <template>
-    <span class="badge" :class="color">
+    <span class="badge" :class="[color, {'clickable': clickable}]">
         {{ text }}
     </span>
 </template>
@@ -7,10 +7,10 @@
 <script>
     export default {
         name: "BaseBadge",
-        props: ['color', 'title'],
+        props: ['color', 'title', 'clickable'],
         computed: {
             text() {
-                return this.title.toUpperCase();
+                return this.title.toString().toUpperCase();
             }
         }
     }
@@ -21,13 +21,17 @@
         background-color: #ccc;
         color: #252525;
         border-radius: 30px;
-        padding: 0.5rem 1rem;
+        padding: 0.5rem 0.7rem;
         display: inline-block;
         margin-right: 0.5rem;
+
+    }
+
+    .clickable {
         cursor: pointer;
     }
 
-    span:hover {
+    span.clickable:hover {
         background-color: #a9a9a9;
     }
 
@@ -36,7 +40,7 @@
         color: white;
     }
 
-    span.red:hover {
+    span.red.clickable:hover {
         background-color: #360607;
     }
 
@@ -45,7 +49,16 @@
         color: white;
     }
 
-    span.green:hover {
+    span.green.clickable:hover {
         background-color: #093B21;
+    }
+
+    .blue {
+        background-color: #185074;
+        color: white;
+    }
+
+    span.blue.clickable:hover {
+        background-color: #0c2739;
     }
 </style>

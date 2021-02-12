@@ -181,6 +181,3 @@ export default {
         }
     }
 }
-
-
-// TODO: Start show order page

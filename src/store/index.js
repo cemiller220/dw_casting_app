@@ -1,6 +1,8 @@
 import { createStore } from 'vuex'
-import cast_list from "./cast_list";
 import router from "../router";
+import cast_list from "./cast_list";
+import show_order from "./show_order";
+
 
 export default createStore({
   state() {
@@ -81,6 +83,7 @@ export default createStore({
     }
   },
   modules: {
-    cast_list: cast_list
+    cast_list: cast_list,
+    show_order: show_order
   }
 })

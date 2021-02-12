@@ -4,6 +4,7 @@
         {{ dancer.name }}
         <base-badge :title="badgeTitle"
                     :color="badgeColor"
+                    :clickable="true"
                     @click="changeStatus"
                     class="float-end">
         </base-badge>

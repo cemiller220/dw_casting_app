@@ -10,7 +10,7 @@ const routes = [
   {path: '/run_casting', name: 'RunCasting',
     component: () => import('../views/RunCasting.vue')},
   {path: '/show_order', name: 'ShowOrder',
-    component: () => import('../views/ShowOrder.vue')},
+    component: () => import('../views/ViewShowOrder.vue')},
   {path: '/cast_list', name: 'ViewCastList',
     component: () => import('../views/ViewCastList.vue')},
 ];

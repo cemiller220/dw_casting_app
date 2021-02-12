@@ -1,0 +1,34 @@
+<template>
+    <!-- QUICK CHANGES -->
+    <div class="row justify-content-center">
+        <div class="col-auto">
+            <h2>Quick Changes</h2>
+        </div>
+    </div>
+        <div v-if="show_quick_changes">
+            <quick-change-info key-name="into"></quick-change-info>
+            <quick-change-info key-name="after"></quick-change-info>
+        </div>
+</template>
+
+<script>
+    import { mapGetters } from 'vuex';
+    import QuickChangeInfo from "./QuickChangeInfo";
+
+    export default {
+        name: "QuickChanges",
+        components: {QuickChangeInfo},
+        computed: {
+            ...mapGetters('show_order', ['selected_piece']),
+            show_quick_changes() {
+                return !!this.selected_piece
+            }
+        }
+    }
+</script>
+
+<style scoped>
+
+</style>
+
+
