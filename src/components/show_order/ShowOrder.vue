@@ -1,12 +1,12 @@
 <template>
-    <div class="scroll margin-border" v-if="show_order_exists">
+    <div class="scroll margin-border" v-if="showOrderExists">
         <div class="card">
             <ul class="list-group list-group-flush" @keyup='nextItem'>
-                <li v-for="(piece, index) in show_order" :key="index"
+                <li v-for="(piece, index) in showOrder" :key="index"
                     :id="'element' + index"
                     class="list-group-item list-group-item d-flex
                            justify-content-between align-items-center shorten-dance-name"
-                    :class="{'list-group-item-primary': selected_piece === piece,
+                    :class="{'list-group-item-primary': selectedPiece === piece,
                              'list-group-item-dark': piece === 'INTERMISSION',
                              'cursor': piece !== 'INTERMISSION'}"
                     @click="selectPiece({piece: piece})">
@@ -33,7 +33,7 @@
             return {}
         },
         computed: {
-            ...mapGetters('show_order', ['show_order', 'show_order_exists', 'selected_piece'])
+            ...mapGetters('show_order', ['showOrder', 'showOrderExists', 'selectedPiece'])
         },
         methods: {
             ...mapActions('show_order', ['selectPiece']),

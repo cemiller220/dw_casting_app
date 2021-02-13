@@ -4,18 +4,18 @@
             <h1>Show Order</h1>
         </div>
     </div>
-    <div class="row justify-content-center" v-if="show_order_exists">
+    <div class="row justify-content-center" v-if="showOrderExists">
         <div class="col-auto">
             <base-button>New Show Order</base-button>
             <base-button>Edit Show Order</base-button>
         </div>
     </div>
-    <div class="row justify-content-center" v-if="show_order_exists">
+    <div class="row justify-content-center" v-if="showOrderExists">
         <div class="col-auto">
             <p>Click a dance to view quick changes</p>
         </div>
     </div>
-    <div class="row justify-content-center" v-if="!show_order_exists">
+    <div class="row justify-content-center" v-if="!showOrderExists">
         <div class="col-auto">
             <base-button>New Show Order</base-button>
         </div>
@@ -30,7 +30,7 @@
         name: "ShowOrderHeader",
         components: {BaseButton},
         computed: {
-            ...mapGetters('show_order', ['show_order_exists']),
+            ...mapGetters('show_order', ['showOrderExists']),
         }
     }
 </script>

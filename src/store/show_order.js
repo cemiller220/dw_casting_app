@@ -2,9 +2,9 @@ export default {
     namespaced: true,
     state() {
         return {
-            show_order: ['dance1', 'dance2', 'dance3'],
-            selected_piece: null,
-            quick_changes: {
+            showOrder: ['dance1', 'dance2', 'dance3'],
+            selectedPiece: null,
+            quickChanges: {
                 'dance1':
                     {
                         into: { 0: ['a', 'b'], 1: [], 2: ['a', 'b', 'c'] },
@@ -21,17 +21,17 @@ export default {
                         after: { 0: [], 1: ['b', 'c'], 2: ['c', 'e'] }
                     }
             },
-            current_quick_changes: {}
+            currentQuickChanges: {}
         }
     },
     mutations: {
         selectPiece(state, payload) {
-            if (state.selected_piece && payload.piece === state.selected_piece) {
-                state.selected_piece = null;
-                state.current_quick_changes = {};
+            if (state.selectedPiece && payload.piece === state.selectedPiece) {
+                state.selectedPiece = null;
+                state.currentQuickChanges = {};
             } else {
-                state.selected_piece = payload.piece;
-                state.current_quick_changes = state.quick_changes[payload.piece]
+                state.selectedPiece = payload.piece;
+                state.currentQuickChanges = state.quickChanges[payload.piece]
             }
 
         }
@@ -42,17 +42,17 @@ export default {
         }
     },
     getters: {
-        show_order(state) {
-            return state.show_order;
+        showOrder(state) {
+            return state.showOrder;
         },
-        show_order_exists(state) {
-            return state.show_order && state.show_order.length !== 0;
+        showOrderExists(state) {
+            return state.showOrder && state.showOrder.length !== 0;
         },
-        selected_piece(state) {
-            return state.selected_piece;
+        selectedPiece(state) {
+            return state.selectedPiece;
         },
-        current_quick_changes(state) {
-            return state.current_quick_changes;
+        currentQuickChanges(state) {
+            return state.currentQuickChanges;
         }
     }
 }

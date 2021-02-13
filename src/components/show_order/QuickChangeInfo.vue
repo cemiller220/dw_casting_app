@@ -2,13 +2,13 @@
     <div class="row justify-content-center">
         <div class="col-11 alert alert-dark text-center shorten-dance-name">
             Quick Changes <strong>{{ keyName.toUpperCase() }}</strong>
-            {{ selected_piece }}
+            {{ selectedPiece }}
         </div>
     </div>
     <div class="row justify-content-around">
-        <div class="alert alert-danger col-3 text-center"
+        <div class="alert alert-danger col-3 text-center clickable"
              :class="{'alert-light': dancers.length === 0}"
-             v-for="(dancers, numbers) in current_quick_changes[keyName]"
+             v-for="(dancers, numbers) in currentQuickChanges[keyName]"
              :key="keyName + '-' + numbers"
              @click="show_dancer_names(dancers, numbers)">
             <p><strong>{{ titles[numbers] }}</strong></p>
@@ -42,7 +42,7 @@
             }
         },
         computed: {
-            ...mapGetters('show_order', ['selected_piece', 'current_quick_changes'])
+            ...mapGetters('show_order', ['selectedPiece', 'currentQuickChanges'])
         },
         methods: {
             show_dancer_names(dancers, numbers) {
@@ -57,7 +57,7 @@
             }
         },
         watch: {
-            selected_piece() {
+            selectedPiece() {
                 this.show_names[this.keyName] = false;
                 this.dancer_names[this.keyName] = [];
             }
@@ -66,5 +66,7 @@
 </script>
 
 <style scoped>
-
+    .clickable {
+        cursor: pointer;
+    }
 </style>
