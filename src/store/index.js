@@ -9,7 +9,8 @@ export default createStore({
     return {
       season: '',
       city: '',
-      possible_seasons: {'nyc': [], 'boston': []}
+      possible_seasons: {'nyc': [], 'boston': []},
+      updateTimes: {}
     }
   },
   mutations: {
@@ -17,9 +18,48 @@ export default createStore({
       state.city = payload.city;
       state.season = payload.season;
       state.possible_seasons = payload.possible_seasons;
+    },
+    setUpdateTimes(state, payload) {
+      state.updateTimes = payload;
     }
   },
   actions: {
+    async uploadData(context, payload) {
+      // this uploads data from the payload
+      const city = context.rootGetters.city;
+      const season = context.rootGetters.season;
+
+      const response = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/${city}/season${season}/${payload.node}.json`, {
+        method: 'PUT',
+        body: JSON.stringify(payload.data)
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(responseData.message || 'Failed to send!');
+      }
+    },
+    async loadData(context, payload) {
+      // if (!payload.forceRefresh && !context.getters.shouldUpdate) {
+      //     return
+      // }
+      const city = context.rootGetters.city;
+      const season = context.rootGetters.season;
+
+      const response = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/${city}/season${season}/${payload.node}.json`);
+      const responseData = await response.json();
+
+      // console.log('load ' + payload.node + ' city ' + city + ' season ' + season);
+      // console.log(responseData);
+
+      if (!response.ok) {
+        throw new Error(responseData.message || 'Failed to fetch!');
+      } else {
+        context.commit(payload.mutation, responseData);
+        return true;
+      }
+    },
     async uploadConfig(context, payload) {
       const response = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/current_config.json`, {
         method: 'PUT',
@@ -60,8 +100,8 @@ export default createStore({
     },
     updateCurrentPageData(context, payload) {
       if (payload.current_path === '/cast_list') {
-        context.dispatch('cast_list/loadData', {node: 'cast_list', mutation: 'setCastList'});
-        context.dispatch('cast_list/loadData', {node: 'change_log', mutation: 'setChangeLog'});
+        context.dispatch('loadData', {node: 'cast_list', mutation: 'cast_list/setCastList'});
+        context.dispatch('loadData', {node: 'change_log', mutation: 'cast_list/setChangeLog'});
       }
     }
   },
@@ -80,6 +120,9 @@ export default createStore({
     },
     boston_seasons(state) {
       return state.possible_seasons.boston;
+    },
+    updateTimes(state) {
+      return state.updateTimes
     }
   },
   modules: {

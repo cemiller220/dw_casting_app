@@ -19,6 +19,9 @@
             <base-button>Reset Show Order</base-button>
         </div>
     </div>
+    <div>
+        <p>{{ dancerOverlap }}</p>
+    </div>
 </template>
 
 <script>
@@ -27,10 +30,20 @@
     import ShowOrderHeader from "../components/show_order/ShowOrderHeader";
     import QuickChanges from "../components/show_order/QuickChanges";
     import BaseButton from "../components/UI/BaseButton";
+    import {mapActions, mapGetters} from "vuex";
 
     export default {
         name: "ViewShowOrder",
         components: {BaseButton, QuickChanges, ShowOrderHeader, ShowOrder, BaseCard},
+        computed: {
+            ...mapGetters('show_order', ['dancerOverlap'])
+        },
+        methods: {
+            ...mapActions('show_order', ['calculateQuickChanges'])
+        },
+        created() {
+            this.calculateQuickChanges();
+        }
     }
 </script>
 

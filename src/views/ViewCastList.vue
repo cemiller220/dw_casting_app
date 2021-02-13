@@ -126,11 +126,12 @@
             }
         },
         methods: {
-            ...mapActions('cast_list', ['loadData', 'resetAll'])
+            ...mapActions(['loadData']),
+            ...mapActions('cast_list', ['resetAll'])
         },
         created() {
-            this.loadData({node: 'cast_list', mutation: 'setCastList'});
-            this.loadData({node: 'change_log', mutation: 'setChangeLog'});
+            this.loadData({node: 'cast_list', mutation: 'cast_list/setCastList'});
+            this.loadData({node: 'change_log', mutation: 'cast_list/setChangeLog'});
         }
     }
 </script>
