@@ -7,7 +7,13 @@ export default {
             quickChanges: {},
             currentQuickChanges: {},
             dancerOverlap: {},
-            allowedNext: {}
+            allowedNext: {},
+            currentShowOrder: [
+                '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 'INTERMISSION', '', '', '', '','', '', '', '', '', '', '', '', '', ''
+            ],
+            selectedSlot: 0,
+            showOrderDone: false,
+            pieces: []
         }
     },
     mutations: {
@@ -25,6 +31,21 @@ export default {
         },
         setAllowedNext(state, payload) {
             state.allowedNext = payload || {};
+        },
+        addToShowOrder(state, payload) {
+            state.currentShowOrder[payload.index] = payload.piece;
+        },
+        setSlot(state, payload) {
+            state.selectedSlot = payload.new_slot;
+        },
+        setDone(state, payload) {
+            state.showOrderDone = payload.done;
+        },
+        setPieces(state, payload) {
+            state.pieces = payload
+        },
+        setShowOrder(state, payload) {
+            state.showOrder = payload;
         }
     },
     actions: {
@@ -86,6 +107,32 @@ export default {
                     await context.dispatch('loadData', {node: 'allowed_next', mutation: 'show_order/setAllowedNext'}, {root: true});
                 }
             }
+        },
+        async addToShowOrder(context, payload) {
+            const index = context.getters.selectedSlot;
+            await context.commit('addToShowOrder', {index, ...payload});
+
+            let nextEmpty = context.getters.currentShowOrder.indexOf('', index+1);
+            if (nextEmpty === -1) {
+                // none after current slot are empty, find any slot that's empty
+                nextEmpty = context.getters.currentShowOrder.indexOf('');
+                if (nextEmpty === -1) {
+                    // none are empty, show order is done
+                    context.commit('setDone', {done: true});
+                    nextEmpty = null;
+                }
+            }
+
+            context.commit('setSlot', {new_slot: nextEmpty});
+
+        },
+        seeOptions(context, payload) {
+            if (context.getters.selectedSlot && context.getters.selectedSlot === payload.index) {
+                // deselect slot
+            }
+        },
+        saveShowOrder(context) {
+            context.commit('setShowOrder', context.getters.currentShowOrder);
         }
     },
     getters: {
@@ -106,6 +153,18 @@ export default {
         },
         allowedNext(state) {
             return state.allowedNext;
+        },
+        currentShowOrder(state) {
+            return state.currentShowOrder;
+        },
+        selectedSlot(state) {
+            return state.selectedSlot;
+        },
+        showOrderDone(state) {
+            return state.showOrderDone;
+        },
+        pieces(state) {
+            return state.pieces;
         }
     }
 }
