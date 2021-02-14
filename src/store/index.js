@@ -102,6 +102,10 @@ export default createStore({
       if (payload.current_path === '/cast_list') {
         context.dispatch('loadData', {node: 'cast_list', mutation: 'cast_list/setCastList'});
         context.dispatch('loadData', {node: 'change_log', mutation: 'cast_list/setChangeLog'});
+      } else if (payload.current_path === '/show_order') {
+        context.dispatch('loadData', {node: 'show_order', mutation: 'show_order/setShowOrder'});
+        context.dispatch('loadData', {node: 'pieces', mutation: 'show_order/setPieces'});
+        context.dispatch('show_order/calculateQuickChanges', {force: false});
       }
     }
   },

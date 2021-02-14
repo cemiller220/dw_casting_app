@@ -22,9 +22,6 @@
         methods: {
             ...mapActions(['loadData']),
             ...mapActions('show_order', ['addToShowOrder'])
-        },
-        created() {
-            this.loadData({node: 'pieces', mutation: 'show_order/setPieces'})
         }
     }
 </script>

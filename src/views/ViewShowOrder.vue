@@ -49,6 +49,7 @@
         },
         created() {
             this.loadData({node: 'show_order', mutation: 'show_order/setShowOrder'});
+            this.loadData({node: 'pieces', mutation: 'show_order/setPieces'});
             this.calculateQuickChanges({force: false});
         }
     }

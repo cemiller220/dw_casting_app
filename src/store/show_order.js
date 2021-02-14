@@ -206,6 +206,5 @@ export default {
 
 
 // TODO: when starting new show order, not starting at correct slot
-// TODO: refresh data when changing seasons
 // TODO: only suggest dances with no dancer overlap
-// TODO: fix problems with order of loading data
+// TODO: fix problems with order of loading data (maybe fixed??)
