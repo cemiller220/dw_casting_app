@@ -9,7 +9,7 @@
                     :class="{'list-group-item-primary': selectedPiece === piece,
                              'list-group-item-dark': piece === 'INTERMISSION',
                              'cursor': piece !== 'INTERMISSION'}"
-                    @click="selectPiece({piece: piece})">
+                    @click="selectPiece({piece: piece, index: index})">
                     <div class="shorten-dance-name">
                         <base-badge color="blue" :title="getNumber(index)" :clickable="false"
                                     v-if="piece !== 'INTERMISSION' ">

@@ -50,8 +50,8 @@ export default createStore({
       const response = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/${city}/season${season}/${payload.node}.json`);
       const responseData = await response.json();
 
-      // console.log('load ' + payload.node + ' city ' + city + ' season ' + season);
-      // console.log(responseData);
+      console.log('load ' + payload.node + ' city ' + city + ' season ' + season);
+      console.log(responseData);
 
       if (!response.ok) {
         throw new Error(responseData.message || 'Failed to fetch!');

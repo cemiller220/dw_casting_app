@@ -4,7 +4,6 @@ export default {
         return {
             showOrder: [],
             selectedPiece: null,
-            quickChanges: {},
             currentQuickChanges: {},
             dancerOverlap: {},
             allowedNext: {},
@@ -17,14 +16,11 @@ export default {
         }
     },
     mutations: {
-        selectPiece(state, payload) {
-            if (state.selectedPiece && payload.piece === state.selectedPiece) {
-                state.selectedPiece = null;
-                state.currentQuickChanges = {};
-            } else {
-                state.selectedPiece = payload.piece;
-                state.currentQuickChanges = state.quickChanges[payload.piece]
-            }
+        setSelectedPiece(state, payload) {
+            state.selectedPiece = payload;
+        },
+        setCurrentQuickChanges(state, payload) {
+            state.currentQuickChanges = payload;
         },
         setDancerOverlap(state, payload) {
             state.dancerOverlap = payload || {};
@@ -50,15 +46,48 @@ export default {
     },
     actions: {
         selectPiece(context, payload) {
-            context.commit('selectPiece', payload)
+            const currentIndex = parseInt(payload.index, 10);
+
+            if (context.getters.selectedPiece && payload.piece === context.getters.selectedPiece) {
+                context.commit('setSelectedPiece', null);
+                context.commit('setCurrentQuickChanges', {});
+            } else {
+                context.commit('setSelectedPiece',  payload.piece);
+                let quick_changes = {
+                    'into': {0: {piece: '', dancers: []}, 1: {piece: '', dancers: []}, 2: {piece: '', dancers: []}},
+                    'after': {0: {piece: '', dancers: []}, 1: {piece: '', dancers: []}, 2: {piece: '', dancers: []}}
+                };
+                for (let ind in [0,1,2]) {
+                    if (currentIndex-1-ind >= 0) {
+                        let adjacentPiece = context.getters.showOrder[currentIndex-1-ind];
+                        if (adjacentPiece === 'INTERMISSION') {
+                            break;
+                        }
+                        quick_changes.into[ind].piece = adjacentPiece;
+                        quick_changes.into[ind].dancers = context.getters.dancerOverlap[payload.piece][adjacentPiece] || [];
+                    }
+                }
+                for (let ind in [0,1,2]) {
+                    if (currentIndex+1+parseInt(ind, 10) < context.getters.showOrder.length) {
+                        let adjacentPiece = context.getters.showOrder[currentIndex+1+parseInt(ind, 10)];
+                        if (adjacentPiece === 'INTERMISSION') {
+                            break;
+                        }
+                        quick_changes.after[ind].piece = adjacentPiece;
+                        quick_changes.after[ind].dancers = context.getters.dancerOverlap[payload.piece][adjacentPiece] || [];
+                    }
+                }
+                context.commit('setCurrentQuickChanges', quick_changes);
+            }
+
         },
-        async calculateQuickChanges(context) {
+        async calculateQuickChanges(context, payload) {
             // check if quick changes exist and if they need to be updated
             const loadSuccessful = await context.dispatch('loadData', {node: 'update_times', mutation: 'setUpdateTimes'}, {root: true});
             if (loadSuccessful) {
                 const update_times = context.rootGetters.updateTimes;
 
-                if ((!update_times) || !('quick_change_calc' in update_times) || !('cast_list' in update_times) || (update_times.quick_change_calc < update_times.cast_list)) {
+                if ((payload.force) || (!update_times) || !('quick_change_calc' in update_times) || !('cast_list' in update_times) || (update_times.quick_change_calc < update_times.cast_list)) {
                     // cast has changed, recalculate
                     let castExists = null;
                     if (context.rootGetters['cast_list/castList'].length === 0) {
@@ -133,6 +162,12 @@ export default {
         },
         saveShowOrder(context) {
             context.commit('setShowOrder', context.getters.currentShowOrder);
+            context.dispatch('uploadData', {node: 'show_order', data: context.getters.currentShowOrder}, {root: true});
+        },
+        newShowOrder(context) {
+            context.commit('setShowOrder', []);
+            context.commit('setSlot', 0);
+            context.commit('setDone', false);
         }
     },
     getters: {
@@ -168,3 +203,9 @@ export default {
         }
     }
 }
+
+
+// TODO: when starting new show order, not starting at correct slot
+// TODO: refresh data when changing seasons
+// TODO: only suggest dances with no dancer overlap
+// TODO: fix problems with order of loading data

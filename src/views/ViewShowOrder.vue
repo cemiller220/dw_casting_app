@@ -44,10 +44,12 @@
             }
         },
         methods: {
+            ...mapActions(['loadData']),
             ...mapActions('show_order', ['calculateQuickChanges'])
         },
         created() {
-            this.calculateQuickChanges();
+            this.loadData({node: 'show_order', mutation: 'show_order/setShowOrder'});
+            this.calculateQuickChanges({force: false});
         }
     }
 </script>
