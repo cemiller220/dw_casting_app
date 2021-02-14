@@ -166,7 +166,7 @@ export default {
         },
         newShowOrder(context) {
             context.commit('setShowOrder', []);
-            context.commit('setSlot', 0);
+            context.commit('setSlot', {new_slot: 0});
             context.commit('setDone', false);
         }
     },
@@ -205,6 +205,5 @@ export default {
 }
 
 
-// TODO: when starting new show order, not starting at correct slot
 // TODO: only suggest dances with no dancer overlap
 // TODO: fix problems with order of loading data (maybe fixed??)
