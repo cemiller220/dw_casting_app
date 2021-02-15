@@ -43,7 +43,7 @@
             ...mapActions('show_order', ['seeOptions'])
         },
         created() {
-            this.seeOptions({index: 0})
+            this.seeOptions({index: 0, dry_run: false})
         }
     }
 </script>

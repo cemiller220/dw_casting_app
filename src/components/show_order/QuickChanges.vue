@@ -5,10 +5,15 @@
             <h2>Quick Changes</h2>
         </div>
     </div>
-        <div v-if="show_quick_changes">
-            <quick-change-info key-name="into"></quick-change-info>
-            <quick-change-info key-name="after"></quick-change-info>
+    <div v-if="show_quick_changes">
+        <quick-change-info key-name="into"></quick-change-info>
+        <quick-change-info key-name="after"></quick-change-info>
+    </div>
+    <div class="row justify-content-center" v-else>
+        <div class="col-auto">
+            <p>Click a dance to view quick changes</p>
         </div>
+    </div>
 </template>
 
 <script>

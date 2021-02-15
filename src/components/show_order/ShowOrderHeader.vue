@@ -11,11 +11,6 @@
             <base-button @click="calculateQuickChanges({force: true})">Refresh Quick Changes</base-button>
         </div>
     </div>
-    <div class="row justify-content-center" v-if="showOrderExists">
-        <div class="col-auto">
-            <p>Click a dance to view quick changes</p>
-        </div>
-    </div>
     <div class="row justify-content-center" v-if="showOrderDone && !showOrderExists">
         <div class="col-auto">
             <base-button @click="saveShowOrder">Save Show Order</base-button>

@@ -2,6 +2,13 @@
     <base-card>
         <show-order-header></show-order-header>
     </base-card>
+<!--    <div class="row" v-if="!showOrderExists">-->
+<!--        <div class="col">-->
+<!--            <base-card>-->
+<!--                <allowed-next></allowed-next>-->
+<!--            </base-card>-->
+<!--        </div>-->
+<!--    </div>-->
     <div class="row justify-content-around">
         <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12">
             <base-card>
@@ -14,6 +21,7 @@
             </base-card>
         </div>
     </div>
+
     <div class="row">
         <div class="col-auto">
             <base-button>Reset Show Order</base-button>
@@ -30,10 +38,11 @@
     import QuickChanges from "../components/show_order/QuickChanges";
     import BaseButton from "../components/UI/BaseButton";
     import {mapActions, mapGetters} from "vuex";
+    import AllowedNext from "../components/show_order/AllowedNext";
 
     export default {
         name: "ViewShowOrder",
-        components: {BaseButton, QuickChanges, ShowOrderHeader, ShowOrder, BaseCard, InProgressShowOrder, OptionsForShowOrder},
+        components: {AllowedNext, BaseButton, QuickChanges, ShowOrderHeader, ShowOrder, BaseCard, InProgressShowOrder, OptionsForShowOrder},
         data() {
             return {
                 // marginCalc: 0

@@ -14,7 +14,8 @@ export default {
             showOrderDone: false,
             pieces: [],
             availableOptions: [],
-            takenOptions: []
+            takenOptions: [],
+            smartOptions: []
         }
     },
     mutations: {
@@ -29,6 +30,9 @@ export default {
         },
         setAllowedNext(state, payload) {
             state.allowedNext = payload || {};
+        },
+        setCurrentShowOrder(state, payload) {
+            state.currentShowOrder = payload;
         },
         addToShowOrder(state, payload) {
             state.currentShowOrder[payload.index] = payload.piece;
@@ -47,6 +51,9 @@ export default {
         },
         setTakenOptions(state, payload) {
             state.takenOptions = payload;
+        },
+        setSmartOptions(state, payload) {
+            state.smartOptions = payload;
         },
         setShowOrder(state, payload) {
             state.showOrder = payload;
@@ -148,17 +155,17 @@ export default {
         },
         async addToShowOrder(context, payload) {
             const index = context.getters.selectedSlot;
+            // check if piece is already in the show order
             const currentPieceIndex = context.getters.currentShowOrder.indexOf(payload.piece);
 
-            if (currentPieceIndex === -1) {
-                await context.commit('addToShowOrder', {index, ...payload});
-            } else {
-                console.log('clear piece');
+            if (currentPieceIndex !== -1) {
+                // if yes, then remove it
                 await context.commit('addToShowOrder', {index: currentPieceIndex, piece: ''});
-                await context.commit('addToShowOrder', {index, ...payload});
             }
+            // add piece to selected slot
+            await context.commit('addToShowOrder', {index, ...payload});
 
-
+            // find next empty slot to fill
             let nextEmpty = context.getters.currentShowOrder.indexOf('', index+1);
             if (nextEmpty === -1) {
                 // none after current slot are empty, find any slot that's empty
@@ -170,12 +177,18 @@ export default {
                 }
             }
 
+            // set the slot and find the options
             context.commit('setSlot', {new_slot: nextEmpty});
-            context.dispatch('seeOptions', {index: nextEmpty});
+            context.dispatch('seeOptions', {index: nextEmpty, dry_run: false});
+
+            // clear any smart suggestions
+            context.commit('setSmartOptions', []);
 
         },
         seeOptions(context, payload) {
-            context.commit('setSlot', {new_slot: payload.index});
+            if (!payload.dry_run) {
+                context.commit('setSlot', {new_slot: payload.index});
+            }
             if (payload.index !== null) {
                 const show_order = context.getters.currentShowOrder;
                 const allowed_next = context.getters.allowedNext;
@@ -193,25 +206,66 @@ export default {
                     allowed_dances = context.getters.pieces;
                 }
 
-                context.commit('setAvailableOptions',
-                    allowed_dances
-                        .filter(piece => show_order.indexOf(piece) === -1)
-                        .sort((piece1, piece2) => {
-                            return allowed_next[piece1].length - allowed_next[piece2].length;
-                        })
-                );
-                context.commit('setTakenOptions',
-                    allowed_dances
-                        .filter(piece => show_order.indexOf(piece) !== -1)
-                        .sort((piece1, piece2) => {
-                            return allowed_next[piece1].length - allowed_next[piece2].length;
-                        })
-                );
+                if (!payload.dry_run) {
+                    context.commit('setAvailableOptions',
+                        allowed_dances
+                            .filter(piece => show_order.indexOf(piece) === -1)
+                            .sort((piece1, piece2) => {
+                                return allowed_next[piece1].length - allowed_next[piece2].length;
+                            })
+                    );
+
+                    context.commit('setTakenOptions',
+                        allowed_dances
+                            .filter(piece => show_order.indexOf(piece) !== -1)
+                            .sort((piece1, piece2) => {
+                                return allowed_next[piece1].length - allowed_next[piece2].length;
+                            })
+                    );
+                } else {
+                    return allowed_dances;
+                }
+
             } else {
-                context.commit('setAvailableOptions', []);
-                context.commit('setTakenOptions', []);
+                if (!payload.dry_run) {
+                    context.commit('setAvailableOptions', []);
+                    context.commit('setTakenOptions', []);
+                }
             }
 
+        },
+        smartSuggest(context) {
+            const pieces = context.getters.pieces;
+            const current_show_order = context.getters.currentShowOrder;
+            const allowed_next = context.getters.allowedNext;
+
+            const piece = pieces
+                .filter(piece => !current_show_order.includes(piece))
+                .sort((piece1, piece2) => {
+                    return allowed_next[piece1].length - allowed_next[piece2].length;
+                })[0];
+            console.log('suggestions for piece: ' + piece);
+
+            let swap_options = [];
+            for (let ind = 0; ind < 30; ind++) {
+                console.log(ind);
+                context.dispatch('seeOptions', {index: ind, dry_run: true})
+                    .then((allowed_dances) => {
+                        if ((allowed_dances.indexOf(piece) !== -1) && (current_show_order[ind] !== '') && (current_show_order[ind] !== 'INTERMISSION')) {
+                            swap_options.push(current_show_order[ind]);
+                        }
+                    });
+            }
+            const firstEmpty = current_show_order.indexOf('');
+            context.dispatch('seeOptions', {index: firstEmpty, dry_run: true})
+                .then((allowed_dances) => {
+                    console.log('swap_options' + swap_options);
+                    console.log('allowed_dances' + allowed_dances);
+                    return swap_options.filter(piece => allowed_dances.includes(piece))
+                })
+                .then((suggestions) => {
+                    context.commit('setSmartOptions', suggestions)
+                });
         },
         saveShowOrder(context) {
             context.commit('setShowOrder', context.getters.currentShowOrder);
@@ -219,6 +273,9 @@ export default {
         },
         newShowOrder(context) {
             context.commit('setShowOrder', []);
+            context.commit('setCurrentShowOrder', [
+                '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 'INTERMISSION', '', '', '', '','', '', '', '', '', '', '', '', '', ''
+            ]);
             context.commit('setSlot', {new_slot: 0});
             context.commit('setDone', false);
         }
@@ -259,12 +316,15 @@ export default {
         },
         takenOptions(state) {
             return state.takenOptions;
+        },
+        smartOptions(state) {
+            return state.smartOptions;
         }
     }
 }
 
 
-// TODO: only suggest dances with no dancer overlap
-// TODO: order by best suggestion
 // TODO: add in style info
 // TODO: fix problems with order of loading data (maybe fixed??)
+// TODO: better suggestions? Based on available next? Able to view available next?
+// TODO: smart suggest: pick a piece that can't go in the next slot, find all slots that it can go in and suggest which ones to swap it (should swap with something that can go in the next slot)
