@@ -1,8 +1,8 @@
 <template>
 <!--    <h2>In Progress Show Order</h2>-->
-    <div class="scroll margin-border">
+    <div>
         <div class="card">
-            <ul class="list-group list-group-flush">
+            <ul class="list-group list-group-flush" >
                 <li v-for="(piece, index) in currentShowOrder" :key="piece"
                     class="list-group-item list-group-item d-flex
                            justify-content-between align-items-center shorten-dance-name"
@@ -12,6 +12,7 @@
                     @click="seeOptions({index: index})">
                     <div class="shorten-dance-name">
                         <base-badge color="blue" :title="getNumber(index)" :clickable="false"
+                                    :class="{'smartOption': smartOptions.includes(piece)}"
                                     v-if="piece !== 'INTERMISSION' ">
                         </base-badge>
                         {{ piece }}
@@ -34,7 +35,7 @@
             }
         },
         computed: {
-            ...mapGetters('show_order', ['currentShowOrder', 'selectedSlot'])
+            ...mapGetters('show_order', ['currentShowOrder', 'selectedSlot', 'smartOptions'])
         },
         methods: {
             getNumber(index) {
@@ -49,5 +50,7 @@
 </script>
 
 <style scoped>
-
+    .smartOption {
+        border: 3px solid #ffcd08;
+    }
 </style>

@@ -19,6 +19,9 @@ export default {
         }
     },
     mutations: {
+        setShowOrder(state, payload) {
+            state.showOrder = payload;
+        },
         setSelectedPieceIndex(state, payload) {
             state.selectedPieceIndex = payload;
         },
@@ -54,9 +57,6 @@ export default {
         },
         setSmartOptions(state, payload) {
             state.smartOptions = payload;
-        },
-        setShowOrder(state, payload) {
-            state.showOrder = payload;
         }
     },
     actions: {
@@ -235,37 +235,40 @@ export default {
 
         },
         smartSuggest(context) {
-            const pieces = context.getters.pieces;
             const current_show_order = context.getters.currentShowOrder;
-            const allowed_next = context.getters.allowedNext;
 
-            const piece = pieces
-                .filter(piece => !current_show_order.includes(piece))
-                .sort((piece1, piece2) => {
-                    return allowed_next[piece1].length - allowed_next[piece2].length;
-                })[0];
-            console.log('suggestions for piece: ' + piece);
+            const remaining_pieces = context.getters.pieces
+                .filter(piece => !current_show_order.includes(piece));
 
             let swap_options = [];
             for (let ind = 0; ind < 30; ind++) {
-                console.log(ind);
-                context.dispatch('seeOptions', {index: ind, dry_run: true})
-                    .then((allowed_dances) => {
-                        if ((allowed_dances.indexOf(piece) !== -1) && (current_show_order[ind] !== '') && (current_show_order[ind] !== 'INTERMISSION')) {
-                            swap_options.push(current_show_order[ind]);
-                        }
-                    });
+                if ((current_show_order[ind] !== '') && (current_show_order[ind] !== 'INTERMISSION')) {
+                    context.dispatch('seeOptions', {index: ind, dry_run: true})
+                        .then((allowed_dances) => {
+                            // if allowed dances contains any of the remaining pieces
+                            console.log('allowed dances ' + allowed_dances);
+                            console.log('remaining pieces ' + remaining_pieces);
+                            if ((allowed_dances.filter(piece => remaining_pieces.includes(piece)).length > 0)) {
+                                console.log('overlap');
+                                swap_options.push(current_show_order[ind]);
+                            }
+                        });
+                }
+
+                if (ind === 29) {
+                    // find all options for the current slot and see if there's any overlap with the swap options
+                    context.dispatch('seeOptions', {index: context.getters.selectedSlot, dry_run: true})
+                        .then((allowed_dances) => {
+                            console.log('swap options: ' + swap_options);
+                            console.log('allowed dances: ' + allowed_dances);
+                            return swap_options.filter(piece => allowed_dances.includes(piece))
+                        })
+                        .then((suggestions) => {
+                            console.log('suggestions: ' + suggestions);
+                            context.commit('setSmartOptions', suggestions);
+                        });
+                }
             }
-            const firstEmpty = current_show_order.indexOf('');
-            context.dispatch('seeOptions', {index: firstEmpty, dry_run: true})
-                .then((allowed_dances) => {
-                    console.log('swap_options' + swap_options);
-                    console.log('allowed_dances' + allowed_dances);
-                    return swap_options.filter(piece => allowed_dances.includes(piece))
-                })
-                .then((suggestions) => {
-                    context.commit('setSmartOptions', suggestions)
-                });
         },
         saveShowOrder(context) {
             context.commit('setShowOrder', context.getters.currentShowOrder);
@@ -278,6 +281,12 @@ export default {
             ]);
             context.commit('setSlot', {new_slot: 0});
             context.commit('setDone', false);
+            context.dispatch('calculateQuickChanges', {force: false});
+        },
+        async resetAll(context) {
+            await context.dispatch('loadData', {node: 'real_show_order', mutation: 'show_order/setShowOrder'}, {root: true});
+            await context.dispatch('uploadData', {node: 'show_order', data: context.getters.showOrder}, {root: true});
+            await context.dispatch('calculateQuickChanges', {force: false});
         }
     },
     getters: {
@@ -324,7 +333,8 @@ export default {
 }
 
 
-// TODO: add in style info
-// TODO: fix problems with order of loading data (maybe fixed??)
-// TODO: better suggestions? Based on available next? Able to view available next?
-// TODO: smart suggest: pick a piece that can't go in the next slot, find all slots that it can go in and suggest which ones to swap it (should swap with something that can go in the next slot)
+// TODO: implement edit button
+// TODO: add in style info?
+// TODO: make show order component reuseable?
+// TODO: implement arrow keys
+// TODO: ability for multiple show orders, calculate summary stats to compare (i.e. average quick changes)

@@ -24,7 +24,7 @@
 
     <div class="row">
         <div class="col-auto">
-            <base-button>Reset Show Order</base-button>
+            <base-button @click="resetAll">Reset to Real Show Order</base-button>
         </div>
     </div>
 </template>
@@ -66,16 +66,8 @@
         },
         methods: {
             ...mapActions(['loadData']),
-            ...mapActions('show_order', ['calculateQuickChanges'])
+            ...mapActions('show_order', ['calculateQuickChanges', 'resetAll'])
         },
-        // watch: {
-        //     selectedSlot() {
-        //         this.marginCalc = 45*(this.selectedSlot <= 20 ? this.selectedSlot : 20) + 'px';
-        //     },
-        //     selectedPieceIndex() {
-        //         this.marginCalc = 45*(this.selectedPieceIndex <= 18 ? this.selectedPieceIndex : 18) + 'px';
-        //     }
-        // },
         created() {
             this.loadData({node: 'show_order', mutation: 'show_order/setShowOrder'});
             this.loadData({node: 'pieces', mutation: 'show_order/setPieces'});
