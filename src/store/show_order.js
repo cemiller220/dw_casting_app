@@ -3,7 +3,7 @@ export default {
     state() {
         return {
             showOrder: [],
-            selectedPiece: null,
+            selectedPieceIndex: null,
             currentQuickChanges: {},
             dancerOverlap: {},
             allowedNext: {},
@@ -12,12 +12,14 @@ export default {
             ],
             selectedSlot: 0,
             showOrderDone: false,
-            pieces: []
+            pieces: [],
+            availableOptions: [],
+            takenOptions: []
         }
     },
     mutations: {
-        setSelectedPiece(state, payload) {
-            state.selectedPiece = payload;
+        setSelectedPieceIndex(state, payload) {
+            state.selectedPieceIndex = payload;
         },
         setCurrentQuickChanges(state, payload) {
             state.currentQuickChanges = payload;
@@ -40,6 +42,12 @@ export default {
         setPieces(state, payload) {
             state.pieces = payload
         },
+        setAvailableOptions(state, payload) {
+            state.availableOptions = payload;
+        },
+        setTakenOptions(state, payload) {
+            state.takenOptions = payload;
+        },
         setShowOrder(state, payload) {
             state.showOrder = payload;
         }
@@ -48,12 +56,13 @@ export default {
         selectPiece(context, payload) {
             const currentIndex = parseInt(payload.index, 10);
 
-            if (context.getters.selectedPiece && payload.piece === context.getters.selectedPiece) {
-                context.commit('setSelectedPiece', null);
+            if (context.getters.selectedPieceIndex && payload.index === context.getters.selectedPieceIndex) {
+                context.commit('setSelectedPieceIndex', null);
                 context.commit('setCurrentQuickChanges', {});
             } else {
-                context.commit('setSelectedPiece',  payload.piece);
+                context.commit('setSelectedPieceIndex',  payload.index);
                 let quick_changes = {
+                    'piece': payload.piece,
                     'into': {0: {piece: '', dancers: []}, 1: {piece: '', dancers: []}, 2: {piece: '', dancers: []}},
                     'after': {0: {piece: '', dancers: []}, 1: {piece: '', dancers: []}, 2: {piece: '', dancers: []}}
                 };
@@ -139,7 +148,16 @@ export default {
         },
         async addToShowOrder(context, payload) {
             const index = context.getters.selectedSlot;
-            await context.commit('addToShowOrder', {index, ...payload});
+            const currentPieceIndex = context.getters.currentShowOrder.indexOf(payload.piece);
+
+            if (currentPieceIndex === -1) {
+                await context.commit('addToShowOrder', {index, ...payload});
+            } else {
+                console.log('clear piece');
+                await context.commit('addToShowOrder', {index: currentPieceIndex, piece: ''});
+                await context.commit('addToShowOrder', {index, ...payload});
+            }
+
 
             let nextEmpty = context.getters.currentShowOrder.indexOf('', index+1);
             if (nextEmpty === -1) {
@@ -153,12 +171,47 @@ export default {
             }
 
             context.commit('setSlot', {new_slot: nextEmpty});
+            context.dispatch('seeOptions', {index: nextEmpty});
 
         },
         seeOptions(context, payload) {
-            if (context.getters.selectedSlot && context.getters.selectedSlot === payload.index) {
-                // deselect slot
+            context.commit('setSlot', {new_slot: payload.index});
+            if (payload.index !== null) {
+                const show_order = context.getters.currentShowOrder;
+                const allowed_next = context.getters.allowedNext;
+                const piece_before = payload.index !== 0 ? show_order[payload.index-1] : '';
+                const piece_after = payload.index !== show_order.length-1 ? show_order[payload.index+1] : '';
+
+                let allowed_dances = [];
+                if ((piece_before !== '' && piece_before !== 'INTERMISSION') && (piece_after !== '' && piece_after !== 'INTERMISSION')){
+                    allowed_dances = allowed_next[piece_before].filter(piece => context.getters.allowedNext[piece_after].includes(piece));
+                } else if (piece_before !== '' && piece_before !== 'INTERMISSION') {
+                    allowed_dances = allowed_next[piece_before];
+                } else if (piece_after !== '' && piece_after !== 'INTERMISSION') {
+                    allowed_dances = allowed_next[piece_after];
+                } else {
+                    allowed_dances = context.getters.pieces;
+                }
+
+                context.commit('setAvailableOptions',
+                    allowed_dances
+                        .filter(piece => show_order.indexOf(piece) === -1)
+                        .sort((piece1, piece2) => {
+                            return allowed_next[piece1].length - allowed_next[piece2].length;
+                        })
+                );
+                context.commit('setTakenOptions',
+                    allowed_dances
+                        .filter(piece => show_order.indexOf(piece) !== -1)
+                        .sort((piece1, piece2) => {
+                            return allowed_next[piece1].length - allowed_next[piece2].length;
+                        })
+                );
+            } else {
+                context.commit('setAvailableOptions', []);
+                context.commit('setTakenOptions', []);
             }
+
         },
         saveShowOrder(context) {
             context.commit('setShowOrder', context.getters.currentShowOrder);
@@ -177,8 +230,8 @@ export default {
         showOrderExists(state) {
             return state.showOrder && state.showOrder.length !== 0;
         },
-        selectedPiece(state) {
-            return state.selectedPiece;
+        selectedPieceIndex(state) {
+            return state.selectedPieceIndex;
         },
         currentQuickChanges(state) {
             return state.currentQuickChanges;
@@ -200,10 +253,18 @@ export default {
         },
         pieces(state) {
             return state.pieces;
+        },
+        availableOptions(state) {
+            return state.availableOptions;
+        },
+        takenOptions(state) {
+            return state.takenOptions;
         }
     }
 }
 
 
 // TODO: only suggest dances with no dancer overlap
+// TODO: order by best suggestion
+// TODO: add in style info
 // TODO: fix problems with order of loading data (maybe fixed??)

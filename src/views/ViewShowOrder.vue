@@ -8,7 +8,7 @@
                 <component :is="leftComponent"></component>
             </base-card>
         </div>
-        <div class="col">
+        <div class="col" :style="'margin-top: ' + marginCalc ">
             <base-card>
                 <component :is="rightComponent"></component>
             </base-card>
@@ -34,19 +34,39 @@
     export default {
         name: "ViewShowOrder",
         components: {BaseButton, QuickChanges, ShowOrderHeader, ShowOrder, BaseCard, InProgressShowOrder, OptionsForShowOrder},
+        data() {
+            return {
+                // marginCalc: 0
+            }
+        },
         computed: {
-            ...mapGetters('show_order', ['dancerOverlap', 'showOrderExists']),
+            ...mapGetters('show_order', ['dancerOverlap', 'showOrderExists', 'selectedSlot', 'selectedPieceIndex']),
             leftComponent() {
                 return this.showOrderExists ? 'show-order' : 'in-progress-show-order';
             },
             rightComponent() {
                 return this.showOrderExists ? 'quick-changes' : 'options-for-show-order';
+            },
+            marginCalc() {
+                if (this.showOrderExists) {
+                    return 45*(this.selectedPieceIndex <= 18 ? this.selectedPieceIndex : 18) + 'px';
+                } else {
+                    return 45*(this.selectedSlot <= 20 ? this.selectedSlot : 20) + 'px';
+                }
             }
         },
         methods: {
             ...mapActions(['loadData']),
             ...mapActions('show_order', ['calculateQuickChanges'])
         },
+        // watch: {
+        //     selectedSlot() {
+        //         this.marginCalc = 45*(this.selectedSlot <= 20 ? this.selectedSlot : 20) + 'px';
+        //     },
+        //     selectedPieceIndex() {
+        //         this.marginCalc = 45*(this.selectedPieceIndex <= 18 ? this.selectedPieceIndex : 18) + 'px';
+        //     }
+        // },
         created() {
             this.loadData({node: 'show_order', mutation: 'show_order/setShowOrder'});
             this.loadData({node: 'pieces', mutation: 'show_order/setPieces'});

@@ -6,7 +6,7 @@
                     :id="'element' + index"
                     class="list-group-item list-group-item d-flex
                            justify-content-between align-items-center shorten-dance-name"
-                    :class="{'list-group-item-primary': selectedPiece === piece,
+                    :class="{'list-group-item-primary': selectedPieceIndex === index,
                              'list-group-item-dark': piece === 'INTERMISSION',
                              'cursor': piece !== 'INTERMISSION'}"
                     @click="selectPiece({piece: piece, index: index})">
@@ -33,7 +33,7 @@
             return {}
         },
         computed: {
-            ...mapGetters('show_order', ['showOrder', 'selectedPiece'])
+            ...mapGetters('show_order', ['showOrder', 'selectedPieceIndex'])
         },
         methods: {
             ...mapActions('show_order', ['selectPiece']),

@@ -1,7 +1,12 @@
 <template>
     <h2>Options for Show Order</h2>
     <div class="row">
-        <div class="col-auto" v-for="piece in filteredPieces" :key="piece" style="margin: 0.5rem 0">
+        <div class="col-auto" v-for="piece in availableOptions" :key="piece" style="margin: 0.5rem 0">
+            <base-badge :title="piece" :clickable="true" color="blue" @click="addToShowOrder({piece: piece})"></base-badge>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-auto" v-for="piece in takenOptions" :key="piece" style="margin: 0.5rem 0">
             <base-badge :title="piece" :clickable="true" @click="addToShowOrder({piece: piece})"></base-badge>
         </div>
     </div>
@@ -14,10 +19,7 @@
         name: "OptionsForShowOrder",
         components: {BaseBadge},
         computed: {
-            ...mapGetters('show_order', ['pieces', 'currentShowOrder']),
-            filteredPieces() {
-                return this.pieces.filter(piece => this.currentShowOrder.indexOf(piece) === -1)
-            }
+            ...mapGetters('show_order', ['pieces', 'currentShowOrder', 'availableOptions', 'takenOptions'])
         },
         methods: {
             ...mapActions(['loadData']),

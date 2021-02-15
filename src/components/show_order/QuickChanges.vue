@@ -19,9 +19,9 @@
         name: "QuickChanges",
         components: {QuickChangeInfo},
         computed: {
-            ...mapGetters('show_order', ['selectedPiece']),
+            ...mapGetters('show_order', ['selectedPieceIndex']),
             show_quick_changes() {
-                return !!this.selectedPiece
+                return this.selectedPieceIndex !== null;
             }
         }
     }

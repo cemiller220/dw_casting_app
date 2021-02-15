@@ -2,7 +2,7 @@
     <div class="row justify-content-center">
         <div class="col-11 alert alert-dark text-center shorten-dance-name">
             Quick Changes <strong>{{ keyName.toUpperCase() }}</strong>
-            {{ selectedPiece }}
+            {{ currentQuickChanges.piece }}
         </div>
     </div>
     <div class="row justify-content-around">
@@ -44,12 +44,12 @@
             }
         },
         computed: {
-            ...mapGetters('show_order', ['selectedPiece', 'currentQuickChanges']),
+            ...mapGetters('show_order', ['selectedPieceIndex', 'currentQuickChanges']),
             pieceNameString() {
                 if (this.keyName === 'into') {
-                    return this.adjacentPiece + ' --> ' + this.selectedPiece;
+                    return this.adjacentPiece + ' --> ' + this.currentQuickChanges.piece;
                 } else {
-                    return this.selectedPiece + ' --> ' + this.adjacentPiece;
+                    return this.currentQuickChanges.piece + ' --> ' + this.adjacentPiece;
                 }
             }
         },
@@ -68,7 +68,7 @@
             }
         },
         watch: {
-            selectedPiece() {
+            selectedPieceIndex() {
                 this.show_names[this.keyName] = false;
                 this.dancer_names[this.keyName] = [];
             }

@@ -1,5 +1,5 @@
 <template>
-    <h2>In Progress Show Order</h2>
+<!--    <h2>In Progress Show Order</h2>-->
     <div class="scroll margin-border">
         <div class="card">
             <ul class="list-group list-group-flush">
@@ -9,7 +9,7 @@
                     :class="{'list-group-item-primary': selectedSlot === index,
                              'list-group-item-dark': piece === 'INTERMISSION',
                              'cursor': piece !== 'INTERMISSION'}"
-                    @click="seeOptions(index)">
+                    @click="seeOptions({index: index})">
                     <div class="shorten-dance-name">
                         <base-badge color="blue" :title="getNumber(index)" :clickable="false"
                                     v-if="piece !== 'INTERMISSION' ">
@@ -24,7 +24,7 @@
 
 <script>
     import BaseBadge from "../UI/BaseBadge";
-    import { mapGetters } from 'vuex';
+    import { mapGetters, mapActions } from 'vuex';
 
     export default {
         name: "InProgressShowOrder",
@@ -40,9 +40,10 @@
             getNumber(index) {
                 return parseInt(index, 10) <= 15 ? parseInt(index, 10) + 1 : parseInt(index, 10);
             },
-            seeOptions(index) {
-                return index;
-            }
+            ...mapActions('show_order', ['seeOptions'])
+        },
+        created() {
+            this.seeOptions({index: 0})
         }
     }
 </script>
