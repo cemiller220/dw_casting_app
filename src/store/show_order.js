@@ -11,7 +11,6 @@ export default {
                 '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 'INTERMISSION', '', '', '', '','', '', '', '', '', '', '', '', '', ''
             ],
             selectedSlot: 0,
-            showOrderDone: false,
             pieces: [],
             availableOptions: [],
             takenOptions: [],
@@ -42,9 +41,6 @@ export default {
         },
         setSlot(state, payload) {
             state.selectedSlot = payload.new_slot;
-        },
-        setDone(state, payload) {
-            state.showOrderDone = payload.done;
         },
         setPieces(state, payload) {
             state.pieces = payload
@@ -171,8 +167,7 @@ export default {
                 // none after current slot are empty, find any slot that's empty
                 nextEmpty = context.getters.currentShowOrder.indexOf('');
                 if (nextEmpty === -1) {
-                    // none are empty, show order is done
-                    context.commit('setDone', {done: true});
+                    // none are empty, set next to null
                     nextEmpty = null;
                 }
             }
@@ -280,13 +275,17 @@ export default {
                 '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 'INTERMISSION', '', '', '', '','', '', '', '', '', '', '', '', '', ''
             ]);
             context.commit('setSlot', {new_slot: 0});
-            context.commit('setDone', false);
             context.dispatch('calculateQuickChanges', {force: false});
         },
         async resetAll(context) {
             await context.dispatch('loadData', {node: 'real_show_order', mutation: 'show_order/setShowOrder'}, {root: true});
             await context.dispatch('uploadData', {node: 'show_order', data: context.getters.showOrder}, {root: true});
             await context.dispatch('calculateQuickChanges', {force: false});
+        },
+        editShowOrder(context) {
+            context.commit('setCurrentShowOrder', context.getters.showOrder);
+            context.commit('setShowOrder', []);
+            context.dispatch('calculateQuickChanges', {force: false});
         }
     },
     getters: {
@@ -313,9 +312,6 @@ export default {
         },
         selectedSlot(state) {
             return state.selectedSlot;
-        },
-        showOrderDone(state) {
-            return state.showOrderDone;
         },
         pieces(state) {
             return state.pieces;

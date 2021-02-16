@@ -7,7 +7,7 @@
     <div class="row justify-content-center" v-if="showOrderExists">
         <div class="col-auto">
             <base-button @click="newShowOrder">New Show Order</base-button>
-            <base-button>Edit Show Order</base-button>
+            <base-button @click="editShowOrder">Edit Show Order</base-button>
             <base-button @click="calculateQuickChanges({force: true})">Refresh Quick Changes</base-button>
         </div>
     </div>
@@ -26,10 +26,13 @@
         name: "ShowOrderHeader",
         components: {BaseButton},
         computed: {
-            ...mapGetters('show_order', ['showOrderExists', 'showOrderDone']),
+            ...mapGetters('show_order', ['showOrderExists', 'currentShowOrder']),
+            showOrderDone() {
+                return this.currentShowOrder.indexOf('') === -1;
+            }
         },
         methods: {
-            ...mapActions('show_order', ['saveShowOrder', 'newShowOrder', 'calculateQuickChanges'])
+            ...mapActions('show_order', ['saveShowOrder', 'newShowOrder', 'calculateQuickChanges', 'editShowOrder'])
         }
     }
 </script>
