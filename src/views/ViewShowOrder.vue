@@ -2,17 +2,10 @@
     <base-card>
         <show-order-header></show-order-header>
     </base-card>
-<!--    <div class="row" v-if="!showOrderExists">-->
-<!--        <div class="col">-->
-<!--            <base-card>-->
-<!--                <allowed-next></allowed-next>-->
-<!--            </base-card>-->
-<!--        </div>-->
-<!--    </div>-->
     <div class="row justify-content-around">
         <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12">
             <base-card>
-                <component :is="leftComponent"></component>
+                <show-order></show-order>
             </base-card>
         </div>
         <div class="col" :style="'margin-top: ' + marginCalc ">
@@ -33,7 +26,6 @@
     import BaseCard from "../components/UI/BaseCard";
     import ShowOrder from "../components/show_order/ShowOrder";
     import ShowOrderHeader from "../components/show_order/ShowOrderHeader";
-    import InProgressShowOrder from "../components/show_order/InProgressShowOrder";
     import OptionsForShowOrder from "../components/show_order/OptionsForShowOrder";
     import QuickChanges from "../components/show_order/QuickChanges";
     import BaseButton from "../components/UI/BaseButton";
@@ -42,26 +34,15 @@
 
     export default {
         name: "ViewShowOrder",
-        components: {AllowedNext, BaseButton, QuickChanges, ShowOrderHeader, ShowOrder, BaseCard, InProgressShowOrder, OptionsForShowOrder},
-        data() {
-            return {
-                // marginCalc: 0
-            }
-        },
+        components: {AllowedNext, BaseButton, QuickChanges, ShowOrderHeader, ShowOrder, BaseCard, OptionsForShowOrder},
         computed: {
-            ...mapGetters('show_order', ['dancerOverlap', 'showOrderExists', 'selectedSlot', 'selectedPieceIndex']),
-            leftComponent() {
-                return this.showOrderExists ? 'show-order' : 'in-progress-show-order';
-            },
+            ...mapGetters('show_order', ['dancerOverlap', 'view', 'selectedIndex']),
             rightComponent() {
-                return this.showOrderExists ? 'quick-changes' : 'options-for-show-order';
+                return this.view === 'main' ? 'quick-changes' : 'options-for-show-order';
             },
             marginCalc() {
-                if (this.showOrderExists) {
-                    return 45*(this.selectedPieceIndex <= 18 ? this.selectedPieceIndex : 18) + 'px';
-                } else {
-                    return 45*(this.selectedSlot <= 20 ? this.selectedSlot : 20) + 'px';
-                }
+                const stopping_index = this.view === 'main' ? 18 : 20;
+                return 45*(this.selectedIndex <= stopping_index ? this.selectedIndex : stopping_index) + 'px';
             }
         },
         methods: {

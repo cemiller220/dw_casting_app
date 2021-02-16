@@ -2,15 +2,12 @@ export default {
     namespaced: true,
     state() {
         return {
+            view: 'main',
             showOrder: [],
-            selectedPieceIndex: null,
+            selectedIndex: null,
             currentQuickChanges: {},
             dancerOverlap: {},
             allowedNext: {},
-            currentShowOrder: [
-                '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 'INTERMISSION', '', '', '', '','', '', '', '', '', '', '', '', '', ''
-            ],
-            selectedSlot: 0,
             pieces: [],
             availableOptions: [],
             takenOptions: [],
@@ -18,11 +15,14 @@ export default {
         }
     },
     mutations: {
+        setView(state, payload) {
+            state.view = payload;
+        },
         setShowOrder(state, payload) {
             state.showOrder = payload;
         },
-        setSelectedPieceIndex(state, payload) {
-            state.selectedPieceIndex = payload;
+        setSelectedIndex(state, payload) {
+            state.selectedIndex = payload;
         },
         setCurrentQuickChanges(state, payload) {
             state.currentQuickChanges = payload;
@@ -33,14 +33,11 @@ export default {
         setAllowedNext(state, payload) {
             state.allowedNext = payload || {};
         },
-        setCurrentShowOrder(state, payload) {
-            state.currentShowOrder = payload;
-        },
+        // setCurrentShowOrder(state, payload) {
+        //     state.currentShowOrder = payload;
+        // },
         addToShowOrder(state, payload) {
-            state.currentShowOrder[payload.index] = payload.piece;
-        },
-        setSlot(state, payload) {
-            state.selectedSlot = payload.new_slot;
+            state.showOrder[payload.index] = payload.piece;
         },
         setPieces(state, payload) {
             state.pieces = payload
@@ -59,11 +56,13 @@ export default {
         selectPiece(context, payload) {
             const currentIndex = parseInt(payload.index, 10);
 
-            if (context.getters.selectedPieceIndex && payload.index === context.getters.selectedPieceIndex) {
-                context.commit('setSelectedPieceIndex', null);
+            if (context.getters.selectedIndex && payload.index === context.getters.selectedIndex) {
+                // deselect index
+                context.commit('setSelectedIndex', null);
                 context.commit('setCurrentQuickChanges', {});
             } else {
-                context.commit('setSelectedPieceIndex',  payload.index);
+                // select index
+                context.commit('setSelectedIndex',  payload.index);
                 let quick_changes = {
                     'piece': payload.piece,
                     'into': {0: {piece: '', dancers: []}, 1: {piece: '', dancers: []}, 2: {piece: '', dancers: []}},
@@ -150,9 +149,9 @@ export default {
             }
         },
         async addToShowOrder(context, payload) {
-            const index = context.getters.selectedSlot;
+            const index = context.getters.selectedIndex;
             // check if piece is already in the show order
-            const currentPieceIndex = context.getters.currentShowOrder.indexOf(payload.piece);
+            const currentPieceIndex = context.getters.showOrder.indexOf(payload.piece);
 
             if (currentPieceIndex !== -1) {
                 // if yes, then remove it
@@ -162,10 +161,10 @@ export default {
             await context.commit('addToShowOrder', {index, ...payload});
 
             // find next empty slot to fill
-            let nextEmpty = context.getters.currentShowOrder.indexOf('', index+1);
+            let nextEmpty = context.getters.showOrder.indexOf('', index+1);
             if (nextEmpty === -1) {
                 // none after current slot are empty, find any slot that's empty
-                nextEmpty = context.getters.currentShowOrder.indexOf('');
+                nextEmpty = context.getters.showOrder.indexOf('');
                 if (nextEmpty === -1) {
                     // none are empty, set next to null
                     nextEmpty = null;
@@ -173,7 +172,7 @@ export default {
             }
 
             // set the slot and find the options
-            context.commit('setSlot', {new_slot: nextEmpty});
+            context.commit('setSelectedIndex', nextEmpty);
             context.dispatch('seeOptions', {index: nextEmpty, dry_run: false});
 
             // clear any smart suggestions
@@ -182,10 +181,10 @@ export default {
         },
         seeOptions(context, payload) {
             if (!payload.dry_run) {
-                context.commit('setSlot', {new_slot: payload.index});
+                context.commit('setSelectedIndex', payload.index);
             }
             if (payload.index !== null) {
-                const show_order = context.getters.currentShowOrder;
+                const show_order = context.getters.showOrder;
                 const allowed_next = context.getters.allowedNext;
                 const piece_before = payload.index !== 0 ? show_order[payload.index-1] : '';
                 const piece_after = payload.index !== show_order.length-1 ? show_order[payload.index+1] : '';
@@ -230,7 +229,7 @@ export default {
 
         },
         smartSuggest(context) {
-            const current_show_order = context.getters.currentShowOrder;
+            const current_show_order = context.getters.showOrder;
 
             const remaining_pieces = context.getters.pieces
                 .filter(piece => !current_show_order.includes(piece));
@@ -252,7 +251,7 @@ export default {
 
                 if (ind === 29) {
                     // find all options for the current slot and see if there's any overlap with the swap options
-                    context.dispatch('seeOptions', {index: context.getters.selectedSlot, dry_run: true})
+                    context.dispatch('seeOptions', {index: context.getters.selectedIndex, dry_run: true})
                         .then((allowed_dances) => {
                             console.log('swap options: ' + swap_options);
                             console.log('allowed dances: ' + allowed_dances);
@@ -266,15 +265,16 @@ export default {
             }
         },
         saveShowOrder(context) {
-            context.commit('setShowOrder', context.getters.currentShowOrder);
-            context.dispatch('uploadData', {node: 'show_order', data: context.getters.currentShowOrder}, {root: true});
+            context.commit('setView', 'main');
+            context.commit('setSelectedIndex', null);
+            context.dispatch('uploadData', {node: 'show_order', data: context.getters.showOrder}, {root: true});
         },
         newShowOrder(context) {
-            context.commit('setShowOrder', []);
-            context.commit('setCurrentShowOrder', [
+            context.commit('setView', 'edit');
+            context.commit('setShowOrder', [
                 '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 'INTERMISSION', '', '', '', '','', '', '', '', '', '', '', '', '', ''
             ]);
-            context.commit('setSlot', {new_slot: 0});
+            context.commit('setSelectedIndex', null);
             context.dispatch('calculateQuickChanges', {force: false});
         },
         async resetAll(context) {
@@ -283,20 +283,21 @@ export default {
             await context.dispatch('calculateQuickChanges', {force: false});
         },
         editShowOrder(context) {
-            context.commit('setCurrentShowOrder', context.getters.showOrder);
-            context.commit('setShowOrder', []);
+            // context.commit('setCurrentShowOrder', context.getters.showOrder);
+            context.commit('setView', 'edit');
+            context.commit('setSelectedIndex', null);
             context.dispatch('calculateQuickChanges', {force: false});
         }
     },
     getters: {
+        view(state) {
+            return state.view;
+        },
         showOrder(state) {
             return state.showOrder;
         },
-        showOrderExists(state) {
-            return state.showOrder && state.showOrder.length !== 0;
-        },
-        selectedPieceIndex(state) {
-            return state.selectedPieceIndex;
+        selectedIndex(state) {
+            return state.selectedIndex;
         },
         currentQuickChanges(state) {
             return state.currentQuickChanges;
@@ -306,12 +307,6 @@ export default {
         },
         allowedNext(state) {
             return state.allowedNext;
-        },
-        currentShowOrder(state) {
-            return state.currentShowOrder;
-        },
-        selectedSlot(state) {
-            return state.selectedSlot;
         },
         pieces(state) {
             return state.pieces;
@@ -329,7 +324,6 @@ export default {
 }
 
 
-// TODO: implement edit button
 // TODO: add in style info?
 // TODO: make show order component reuseable?
 // TODO: implement arrow keys

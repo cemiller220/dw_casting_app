@@ -44,7 +44,7 @@
             }
         },
         computed: {
-            ...mapGetters('show_order', ['selectedPieceIndex', 'currentQuickChanges']),
+            ...mapGetters('show_order', ['selectedIndex', 'currentQuickChanges']),
             pieceNameString() {
                 if (this.keyName === 'into') {
                     return this.adjacentPiece + ' --> ' + this.currentQuickChanges.piece;
@@ -68,7 +68,7 @@
             }
         },
         watch: {
-            selectedPieceIndex() {
+            selectedIndex() {
                 this.show_names[this.keyName] = false;
                 this.dancer_names[this.keyName] = [];
             }
