@@ -53,8 +53,10 @@ export default {
         }
     },
     actions: {
-        selectPiece(context, payload) {
+        seeQuickChanges(context, payload) {
+            console.log('in quick change func');
             const currentIndex = parseInt(payload.index, 10);
+            const currentPiece = context.getters.showOrder[currentIndex];
 
             if (context.getters.selectedIndex && payload.index === context.getters.selectedIndex) {
                 // deselect index
@@ -64,7 +66,7 @@ export default {
                 // select index
                 context.commit('setSelectedIndex',  payload.index);
                 let quick_changes = {
-                    'piece': payload.piece,
+                    'piece': currentPiece,
                     'into': {0: {piece: '', dancers: []}, 1: {piece: '', dancers: []}, 2: {piece: '', dancers: []}},
                     'after': {0: {piece: '', dancers: []}, 1: {piece: '', dancers: []}, 2: {piece: '', dancers: []}}
                 };
@@ -75,7 +77,7 @@ export default {
                             break;
                         }
                         quick_changes.into[ind].piece = adjacentPiece;
-                        quick_changes.into[ind].dancers = context.getters.dancerOverlap[payload.piece][adjacentPiece] || [];
+                        quick_changes.into[ind].dancers = context.getters.dancerOverlap[currentPiece][adjacentPiece] || [];
                     }
                 }
                 for (let ind in [0,1,2]) {
@@ -85,7 +87,7 @@ export default {
                             break;
                         }
                         quick_changes.after[ind].piece = adjacentPiece;
-                        quick_changes.after[ind].dancers = context.getters.dancerOverlap[payload.piece][adjacentPiece] || [];
+                        quick_changes.after[ind].dancers = context.getters.dancerOverlap[currentPiece][adjacentPiece] || [];
                     }
                 }
                 context.commit('setCurrentQuickChanges', quick_changes);
@@ -287,6 +289,19 @@ export default {
             context.commit('setView', 'edit');
             context.commit('setSelectedIndex', null);
             context.dispatch('calculateQuickChanges', {force: false});
+        },
+        incrementIndex(context, payload) {
+            const new_index = context.getters.selectedIndex + payload.value;
+            if (context.getters.showOrder[new_index] === 'INTERMISSION') {
+                context.dispatch('incrementIndex', {value: payload.value*2});
+            } else if (new_index >= 0 && new_index < 30) {
+                if (context.getters.view === 'main') {
+                    console.log('see quick changes');
+                    context.dispatch('seeQuickChanges', {index: new_index})
+                } else if (context.getters.view === 'edit') {
+                    context.dispatch('seeOptions', {index: new_index})
+                }
+            }
         }
     },
     getters: {
@@ -325,6 +340,5 @@ export default {
 
 
 // TODO: add in style info?
-// TODO: make show order component reuseable?
 // TODO: implement arrow keys
 // TODO: ability for multiple show orders, calculate summary stats to compare (i.e. average quick changes)

@@ -1,6 +1,8 @@
 <template>
     <div>
-        <div class="card">
+        <div class="card" tabindex="0"
+             @keyup.down="incrementIndex({value: 1})"
+             @keyup.up="incrementIndex({value: -1})">
             <ul class="list-group list-group-flush">
                 <li v-for="(piece, index) in showOrder" :key="index"
                     class="list-group-item list-group-item d-flex
@@ -8,7 +10,7 @@
                     :class="{'list-group-item-primary': selectedIndex === index,
                              'list-group-item-dark': piece === 'INTERMISSION',
                              'cursor': piece !== 'INTERMISSION'}"
-                    @click="clickItem(piece, index)">
+                    @click="clickItem(index)">
                     <div class="shorten-dance-name">
                         <base-badge color="blue" :title="getNumber(index)" :clickable="false"
                                     :class="{'smartOption': smartOptions.includes(piece)}"
@@ -33,13 +35,13 @@
             ...mapGetters('show_order', ['showOrder', 'selectedIndex', 'smartOptions', 'view'])
         },
         methods: {
-            ...mapActions('show_order', ['selectPiece', 'seeOptions']),
+            ...mapActions('show_order', ['seeQuickChanges', 'seeOptions', 'incrementIndex']),
             getNumber(index) {
                 return parseInt(index, 10) <= 15 ? parseInt(index, 10) + 1 : parseInt(index, 10);
             },
-            clickItem(piece, index) {
+            clickItem(index) {
                 if (this.view === 'main') {
-                    this.selectPiece({piece: piece, index: index})
+                    this.seeQuickChanges({index: index})
                 } else if (this.view === 'edit') {
                     this.seeOptions({index: index})
                 }
