@@ -2,9 +2,11 @@ export default {
     namespaced: true,
     state() {
         return {
-            view: 'main',
+            view: 'options',
+            showOrderOptions: [],
             showOrder: [],
             selectedIndex: null,
+            selectedOptionIndex: null,
             currentQuickChanges: {},
             dancerOverlap: {},
             allowedNext: {},
@@ -21,8 +23,14 @@ export default {
         setShowOrder(state, payload) {
             state.showOrder = payload;
         },
+        setShowOrderOptions(state, payload) {
+            state.showOrderOptions = payload;
+        },
         setSelectedIndex(state, payload) {
             state.selectedIndex = payload;
+        },
+        setSelectedOptionIndex(state, payload) {
+            state.selectedOptionIndex = payload;
         },
         setCurrentQuickChanges(state, payload) {
             state.currentQuickChanges = payload;
@@ -33,9 +41,6 @@ export default {
         setAllowedNext(state, payload) {
             state.allowedNext = payload || {};
         },
-        // setCurrentShowOrder(state, payload) {
-        //     state.currentShowOrder = payload;
-        // },
         addToShowOrder(state, payload) {
             state.showOrder[payload.index] = payload.piece;
         },
@@ -53,46 +58,57 @@ export default {
         }
     },
     actions: {
+        getQuickChanges(context, payload) {
+            let quick_changes = {
+                'piece': payload.currentPiece,
+                'into': {0: {piece: '', dancers: []}, 1: {piece: '', dancers: []}, 2: {piece: '', dancers: []}},
+                'after': {0: {piece: '', dancers: []}, 1: {piece: '', dancers: []}, 2: {piece: '', dancers: []}}
+            };
+            for (let ind in [0,1,2]) {
+                if (payload.currentIndex-1-ind >= 0) {
+                    let adjacentPiece = payload.showOrder[payload.currentIndex-1-ind];
+                    if (adjacentPiece === 'INTERMISSION') {
+                        break;
+                    }
+                    quick_changes.into[ind].piece = adjacentPiece;
+                    quick_changes.into[ind].dancers = context.getters.dancerOverlap[payload.currentPiece][adjacentPiece] || [];
+                }
+            }
+            for (let ind in [0,1,2]) {
+                if (payload.currentIndex+1+parseInt(ind, 10) < payload.showOrder.length) {
+                    let adjacentPiece = payload.showOrder[payload.currentIndex+1+parseInt(ind, 10)];
+                    if (adjacentPiece === 'INTERMISSION') {
+                        break;
+                    }
+                    quick_changes.after[ind].piece = adjacentPiece;
+                    quick_changes.after[ind].dancers = context.getters.dancerOverlap[payload.currentPiece][adjacentPiece] || [];
+                }
+            }
+
+            return quick_changes;
+        },
         seeQuickChanges(context, payload) {
             console.log('in quick change func');
             const currentIndex = parseInt(payload.index, 10);
             const currentPiece = context.getters.showOrder[currentIndex];
 
-            if (context.getters.selectedIndex && payload.index === context.getters.selectedIndex) {
-                // deselect index
-                context.commit('setSelectedIndex', null);
-                context.commit('setCurrentQuickChanges', {});
-            } else {
-                // select index
-                context.commit('setSelectedIndex',  payload.index);
-                let quick_changes = {
-                    'piece': currentPiece,
-                    'into': {0: {piece: '', dancers: []}, 1: {piece: '', dancers: []}, 2: {piece: '', dancers: []}},
-                    'after': {0: {piece: '', dancers: []}, 1: {piece: '', dancers: []}, 2: {piece: '', dancers: []}}
-                };
-                for (let ind in [0,1,2]) {
-                    if (currentIndex-1-ind >= 0) {
-                        let adjacentPiece = context.getters.showOrder[currentIndex-1-ind];
-                        if (adjacentPiece === 'INTERMISSION') {
-                            break;
-                        }
-                        quick_changes.into[ind].piece = adjacentPiece;
-                        quick_changes.into[ind].dancers = context.getters.dancerOverlap[currentPiece][adjacentPiece] || [];
-                    }
+            if (currentPiece !== "INTERMISSION") {
+                if (context.getters.selectedIndex && payload.index === context.getters.selectedIndex) {
+                    // deselect index
+                    context.commit('setSelectedIndex', null);
+                    context.commit('setCurrentQuickChanges', {});
+                } else {
+                    // select index
+                    context.commit('setSelectedIndex',  payload.index);
+                    context.dispatch('getQuickChanges', {
+                        currentPiece: currentPiece,
+                        currentIndex: currentIndex,
+                        showOrder: context.getters.showOrder
+                    }).then((quick_changes) => {
+                        context.commit('setCurrentQuickChanges', quick_changes);
+                    });
                 }
-                for (let ind in [0,1,2]) {
-                    if (currentIndex+1+parseInt(ind, 10) < context.getters.showOrder.length) {
-                        let adjacentPiece = context.getters.showOrder[currentIndex+1+parseInt(ind, 10)];
-                        if (adjacentPiece === 'INTERMISSION') {
-                            break;
-                        }
-                        quick_changes.after[ind].piece = adjacentPiece;
-                        quick_changes.after[ind].dancers = context.getters.dancerOverlap[currentPiece][adjacentPiece] || [];
-                    }
-                }
-                context.commit('setCurrentQuickChanges', quick_changes);
             }
-
         },
         async calculateQuickChanges(context, payload) {
             // check if quick changes exist and if they need to be updated
@@ -269,7 +285,21 @@ export default {
         saveShowOrder(context) {
             context.commit('setView', 'main');
             context.commit('setSelectedIndex', null);
-            context.dispatch('uploadData', {node: 'show_order', data: context.getters.showOrder}, {root: true});
+            context.dispatch('calculateShowOrderStats', {show_order: context.getters.showOrder}).then((stats) => {
+                let current_show_orders = context.getters.showOrderOptions;
+                current_show_orders.push({
+                    showOrder: context.getters.showOrder,
+                    stats: stats
+                });
+                context.dispatch('uploadData',
+                    {
+                        node: 'show_order',
+                        data: current_show_orders
+                    },
+                    {root: true});
+                context.commit('setSelectedOptionIndex', current_show_orders.length-1);
+            });
+
         },
         newShowOrder(context) {
             context.commit('setView', 'edit');
@@ -290,6 +320,23 @@ export default {
             context.commit('setSelectedIndex', null);
             context.dispatch('calculateQuickChanges', {force: false});
         },
+        deleteShowOrder(context) {
+            context.commit('setView', 'options');
+            context.commit('setSelectedIndex', null);
+
+            context.getters.showOrderOptions.splice(context.getters.selectedOptionIndex, 1);
+            context.dispatch('uploadData',
+                {
+                    node: 'show_order',
+                    data: context.getters.showOrderOptions
+                },
+                {root: true}
+                );
+            context.commit('setSelectedOptionIndex', null);
+        },
+        viewAllOptions(context) {
+            context.commit('setView', 'options');
+        },
         incrementIndex(context, payload) {
             const new_index = context.getters.selectedIndex + payload.value;
             if (context.getters.showOrder[new_index] === 'INTERMISSION') {
@@ -302,17 +349,49 @@ export default {
                     context.dispatch('seeOptions', {index: new_index})
                 }
             }
+        },
+        async calculateShowOrderStats(context, payload) {
+            const show_order = payload.show_order;
+            let quick_change_score = 0;
+            let any_back_to_back = false;
+            for (let currentIndex=0; currentIndex<show_order.length; currentIndex++) {
+                if (show_order[currentIndex] !== 'INTERMISSION' && show_order[currentIndex] !== '') {
+                    await context.dispatch('getQuickChanges', {
+                        currentIndex: currentIndex,
+                        currentPiece: show_order[currentIndex],
+                        showOrder: show_order
+                    }).then((quick_changes) => {
+                        if (quick_changes['after'][0].length > 0) {
+                            any_back_to_back = true;
+                        }
+                        quick_change_score += 3*quick_changes['after'][0].dancers.length + 2*quick_changes['after'][1].dancers.length + quick_changes['after'][2].dancers.length
+                    })
+                }
+            }
+
+            return {any_back_to_back, quick_change_score}
+        },
+        selectOption(context, payload) {
+            context.commit('setShowOrder', context.getters.showOrderOptions[payload.index].showOrder);
+            context.commit('setView', 'main');
+            context.commit('setSelectedOptionIndex', payload.index);
         }
     },
     getters: {
         view(state) {
             return state.view;
         },
+        showOrderOptions(state) {
+            return state.showOrderOptions;
+        },
         showOrder(state) {
             return state.showOrder;
         },
         selectedIndex(state) {
             return state.selectedIndex;
+        },
+        selectedOptionIndex(state) {
+            return state.selectedOptionIndex;
         },
         currentQuickChanges(state) {
             return state.currentQuickChanges;
@@ -340,5 +419,4 @@ export default {
 
 
 // TODO: add in style info?
-// TODO: implement arrow keys
 // TODO: ability for multiple show orders, calculate summary stats to compare (i.e. average quick changes)

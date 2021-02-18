@@ -8,10 +8,16 @@
         <div class="col-auto">
             <base-button @click="newShowOrder">New Show Order</base-button>
             <base-button @click="editShowOrder">Edit Show Order</base-button>
+            <base-button @click="deleteShowOrder">Delete Show Order</base-button>
+        </div>
+    </div>
+    <div class="row justify-content-center" v-if="view === 'main'">
+        <div class="col-auto">
+            <base-button @click="viewAllOptions">View All Show Orders</base-button>
             <base-button @click="calculateQuickChanges({force: true})">Refresh Quick Changes</base-button>
         </div>
     </div>
-    <div class="row justify-content-center" v-if="showOrderDone && view !== 'main'">
+    <div class="row justify-content-center" v-if="view !== 'main'">
         <div class="col-auto">
             <base-button @click="saveShowOrder">Save Show Order</base-button>
         </div>
@@ -32,7 +38,7 @@
             }
         },
         methods: {
-            ...mapActions('show_order', ['saveShowOrder', 'newShowOrder', 'calculateQuickChanges', 'editShowOrder'])
+            ...mapActions('show_order', ['saveShowOrder', 'newShowOrder', 'calculateQuickChanges', 'editShowOrder', 'viewAllOptions', 'deleteShowOrder'])
         }
     }
 </script>

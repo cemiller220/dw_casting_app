@@ -2,7 +2,10 @@
     <base-card>
         <show-order-header></show-order-header>
     </base-card>
-    <div class="row justify-content-around">
+    <base-card style="margin-top: 20px;" v-if="view === 'options'">
+        <show-order-selection></show-order-selection>
+    </base-card>
+    <div class="row justify-content-around" v-if="view !== 'options'">
         <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12">
             <base-card>
                 <show-order></show-order>
@@ -14,8 +17,7 @@
             </base-card>
         </div>
     </div>
-
-    <div class="row">
+    <div class="row" v-if="view !== 'options'">
         <div class="col-auto">
             <base-button @click="resetAll">Reset to Real Show Order</base-button>
         </div>
@@ -31,10 +33,11 @@
     import BaseButton from "../components/UI/BaseButton";
     import {mapActions, mapGetters} from "vuex";
     import AllowedNext from "../components/show_order/AllowedNext";
+    import ShowOrderSelection from "../components/show_order/ShowOrderSelection";
 
     export default {
         name: "ViewShowOrder",
-        components: {AllowedNext, BaseButton, QuickChanges, ShowOrderHeader, ShowOrder, BaseCard, OptionsForShowOrder},
+        components: {ShowOrderSelection, AllowedNext, BaseButton, QuickChanges, ShowOrderHeader, ShowOrder, BaseCard, OptionsForShowOrder},
         computed: {
             ...mapGetters('show_order', ['dancerOverlap', 'view', 'selectedIndex']),
             rightComponent() {
@@ -50,7 +53,7 @@
             ...mapActions('show_order', ['calculateQuickChanges', 'resetAll'])
         },
         created() {
-            this.loadData({node: 'show_order', mutation: 'show_order/setShowOrder'});
+            this.loadData({node: 'show_order', mutation: 'show_order/setShowOrderOptions'});
             this.loadData({node: 'pieces', mutation: 'show_order/setPieces'});
             this.calculateQuickChanges({force: false});
         }
