@@ -100,6 +100,3 @@ export default {
     }
 }
 
-
-// TODO: add in style info?
-// TODO: refresh summary stats with quick change refresh

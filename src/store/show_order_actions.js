@@ -299,9 +299,14 @@ export default {
     },
     async resetAll(context) {
         // todo: fix this with new multi show order format
-        // await context.dispatch('loadData', {node: 'real_show_order', mutation: 'show_order/setShowOrder'}, {root: true});
-        // await context.dispatch('uploadData', {node: 'show_order', data: context.getters.showOrder}, {root: true});
+        await context.dispatch('loadData', {node: 'real_show_order', mutation: 'show_order/setShowOrder'}, {root: true});
         await context.dispatch('calculateQuickChanges', {force: false});
+        await context.dispatch('calculateShowOrderStats', {show_order: context.getters.showOrder}).then((stats) => {
+            return [{showOrder: context.getters.showOrder, stats: stats}];
+        }).then((all_show_orders) => {
+            context.dispatch('uploadData', {node: 'show_order', data: all_show_orders}, {root: true});
+            context.commit('setAllShowOrders', all_show_orders);
+        });
     },
     incrementIndex(context, payload) {
         const new_index = context.getters.selectedIndex + payload.value;
