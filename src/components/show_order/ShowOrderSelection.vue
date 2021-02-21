@@ -5,7 +5,7 @@
         </div>
     </div>
     <div class="row justify-content-center">
-        <div class="col-auto show-order-card text-center" v-for="(show_order, index) in showOrderOptions" :key="'show_order' + index">
+        <div class="col-auto show-order-card text-center" v-for="(show_order, index) in allShowOrders" :key="'show_order' + index">
             <base-card :clickable="true" @click="selectOption({index: index})">
                 <h5>Option {{ index+1 }}</h5>
                 <div class="box">
@@ -36,7 +36,7 @@
         name: "ShowOrderSelection",
         components: {BaseBadge, BaseCard},
         computed: {
-            ...mapGetters('show_order', ['showOrderOptions'])
+            ...mapGetters('show_order', ['allShowOrders'])
         },
         methods: {
             ...mapActions('show_order', ['selectOption'])

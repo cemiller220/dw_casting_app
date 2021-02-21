@@ -2,10 +2,10 @@
     <base-card>
         <show-order-header></show-order-header>
     </base-card>
-    <base-card style="margin-top: 20px;" v-if="view === 'options'">
+    <base-card style="margin-top: 20px;" v-if="view === 'all'">
         <show-order-selection></show-order-selection>
     </base-card>
-    <div class="row justify-content-around" v-if="view !== 'options'">
+    <div class="row justify-content-around" v-if="view !== 'all'">
         <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12">
             <base-card>
                 <show-order></show-order>
@@ -17,7 +17,7 @@
             </base-card>
         </div>
     </div>
-    <div class="row" v-if="view !== 'options'">
+    <div class="row" v-if="view !== 'all'">
         <div class="col-auto">
             <base-button @click="resetAll">Reset to Real Show Order</base-button>
         </div>
@@ -53,7 +53,8 @@
             ...mapActions('show_order', ['calculateQuickChanges', 'resetAll'])
         },
         created() {
-            this.loadData({node: 'show_order', mutation: 'show_order/setShowOrderOptions'});
+            console.log('view: ' + this.view);
+            this.loadData({node: 'show_order', mutation: 'show_order/setAllShowOrders'});
             this.loadData({node: 'pieces', mutation: 'show_order/setPieces'});
             this.calculateQuickChanges({force: false});
         }
