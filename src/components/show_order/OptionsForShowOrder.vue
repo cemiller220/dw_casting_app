@@ -1,6 +1,12 @@
 <template>
     <h2>Options for Show Order</h2>
-    <base-button @click="smartSuggest" v-if="availableOptions.length === 0 && selectedIndex !== null">Suggest Swap</base-button>
+    <div class="row">
+        <div class="col-auto">
+            <base-button @click="smartSuggest" v-if="showSmartSuggest">Suggest From Taken</base-button>
+            <base-button @click="swapSuggest" v-if="selectedIndex !== null && showOrder[selectedIndex] !== ''">Suggest Swap</base-button>
+        </div>
+
+    </div>
     <div class="row">
         <div class="col-auto optionBadges" v-for="piece in availableOptions" :key="piece">
             <base-badge :title="piece" :clickable="true" color="blue"
@@ -27,11 +33,14 @@
         name: "OptionsForShowOrder",
         components: {BaseButton, BaseBadge},
         computed: {
-            ...mapGetters('show_order', ['pieces', 'currentShowOrder', 'availableOptions', 'takenOptions', 'smartOptions', 'selectedIndex'])
+            ...mapGetters('show_order', ['pieces', 'showOrder', 'availableOptions', 'takenOptions', 'smartOptions', 'selectedIndex']),
+            showSmartSuggest() {
+                return this.availableOptions.length === 0 && this.selectedIndex !== null && this.showOrder.indexOf('') !== -1
+            }
         },
         methods: {
             ...mapActions(['loadData']),
-            ...mapActions('show_order', ['addToShowOrder', 'smartSuggest'])
+            ...mapActions('show_order', ['addToShowOrder', 'smartSuggest', 'swapSuggest'])
         }
     }
 </script>

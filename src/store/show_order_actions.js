@@ -198,7 +198,7 @@ export default {
         const current_show_order = context.getters.showOrder;
         const remaining_pieces = context.getters.pieces.filter(piece => !current_show_order.includes(piece));
 
-        let swap_options = [];
+        let options = [];
         for (let ind = 0; ind < 30; ind++) {
             // loop through current show order
             if ((current_show_order[ind] !== '') && (current_show_order[ind] !== 'INTERMISSION')) {
@@ -209,21 +209,45 @@ export default {
                         console.log('allowed dances ' + allowed_dances);
                         console.log('remaining pieces ' + remaining_pieces);
                         // if any of the remaining pieces not in the show order yet can go in this slot,
-                        // save the name of the dance currently in this slot as a "swap option"
+                        // save the name of the dance currently in this slot as a "option"
                         if ((allowed_dances.filter(piece => remaining_pieces.includes(piece)).length > 0)) {
                             console.log('overlap');
-                            swap_options.push(current_show_order[ind]);
+                            options.push(current_show_order[ind]);
                         }
                     });
             }
         }
 
-        // find all options for the current slot and see if there's any overlap with the swap options
+        // find all options for the current slot and see if there's any overlap with the options
         context.dispatch('getOptions', {index: context.getters.selectedIndex})
             .then((allowed_dances) => {
-                console.log('swap options: ' + swap_options);
+                console.log('options: ' + options);
                 console.log('allowed dances: ' + allowed_dances);
-                context.commit('setSmartOptions', swap_options.filter(piece => allowed_dances.includes(piece)));
+                context.commit('setSmartOptions', options.filter(piece => allowed_dances.includes(piece)));
+            });
+    },
+    async swapSuggest(context) {
+        const current_show_order = context.getters.showOrder;
+        const current_piece = current_show_order[context.getters.selectedIndex];
+
+        let options = {};
+        for (let ind = 0; ind < 30; ind++) {
+            // loop through current show order
+            if ((current_show_order[ind] !== '') && (current_show_order[ind] !== 'INTERMISSION')) {
+                // get all the options for each slot
+                await context.dispatch('getOptions', {index: ind})
+                    .then((allowed_dances) => {
+                        options[current_show_order[ind]] = allowed_dances;
+                    });
+            }
+        }
+
+        // find all options for the current slot and see if there's any overlap with the options
+        context.dispatch('getOptions', {index: context.getters.selectedIndex})
+            .then((allowed_dances) => {
+                console.log('options: ' + options);
+                console.log('allowed dances: ' + allowed_dances);
+                context.commit('setSmartOptions', allowed_dances.filter(piece => options[piece].includes(current_piece) && piece !== current_piece));
             });
     },
     newShowOrder(context) {
