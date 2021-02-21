@@ -17,7 +17,7 @@
             </base-card>
         </div>
     </div>
-    <div class="row" v-if="view !== 'all'">
+    <div class="row">
         <div class="col-auto">
             <base-button @click="resetAll">Reset to Real Show Order</base-button>
         </div>
