@@ -323,8 +323,9 @@ export default {
     },
     async calculateShowOrderStats(context, payload) {
         const show_order = payload.show_order;
-        let quick_change_score = 0;
-        let any_back_to_back = false;
+        let num_back_to_back = 0;
+        let num_one_between = 0;
+        let num_two_between = 0;
         for (let currentIndex=0; currentIndex<show_order.length; currentIndex++) {
             if (show_order[currentIndex] !== 'INTERMISSION' && show_order[currentIndex] !== '') {
                 await context.dispatch('getQuickChanges', {
@@ -332,15 +333,14 @@ export default {
                     currentPiece: show_order[currentIndex],
                     showOrder: show_order
                 }).then((quick_changes) => {
-                    if (quick_changes['after'][0].length > 0) {
-                        any_back_to_back = true;
-                    }
-                    quick_change_score += 3*quick_changes['after'][0].dancers.length + 2*quick_changes['after'][1].dancers.length + quick_changes['after'][2].dancers.length
+                    num_back_to_back += quick_changes['after'][0].dancers.length;
+                    num_one_between += quick_changes['after'][1].dancers.length;
+                    num_two_between += quick_changes['after'][2].dancers.length;
                 })
             }
         }
 
-        return {any_back_to_back, quick_change_score}
+        return {num_back_to_back, num_one_between, num_two_between}
     },
     selectOption(context, payload) {
         context.commit('setShowOrder', context.getters.allShowOrders[payload.index].showOrder);
@@ -351,3 +351,7 @@ export default {
         context.commit('setView', 'all');
     },
 }
+
+// todo: change quick change score to individual counts of 1 between and 2 between
+// todo: add auth
+// todo: start casting!

@@ -3,8 +3,8 @@
         <div class="col-auto">
             <h3>Choose a Saved Show Order</h3>
         </div>
+    <div class="row justify-content-center" v-if="allShowOrders.length !== 0">
     </div>
-    <div class="row justify-content-center">
         <div class="col-auto show-order-card text-center" v-for="(show_order, index) in allShowOrders" :key="'show_order' + index">
             <base-card :clickable="true" @click="selectOption({index: index})">
                 <h5>Option {{ index+1 }}</h5>
@@ -15,11 +15,14 @@
                     <p class="show-order-detail">Act 2 Finale: <br><base-badge :title="show_order.showOrder[29]" :clickable="false"></base-badge></p>
                 </div>
                 <div class="box">
-                    <p class="show-order-detail">Quick Change Score: <base-badge :title="show_order.stats.quick_change_score" :clickable="false"></base-badge></p>
                     <p class="show-order-detail">Back to Back:
-                        <base-badge :title="show_order.stats.any_back_to_back ? 'yes' : 'no'"
-                                    :color="show_order.stats.any_back_to_back ? 'red' : ''"
-                                    :clickable="false"></base-badge>
+                        <base-badge :title="show_order.stats.num_back_to_back" :clickable="false"></base-badge>
+                    </p>
+                    <p class="show-order-detail">One Between:
+                        <base-badge :title="show_order.stats.num_one_between" :clickable="false"></base-badge>
+                    </p>
+                    <p class="show-order-detail">Two Between:
+                        <base-badge :title="show_order.stats.num_two_between" :clickable="false"></base-badge>
                     </p>
                 </div>
             </base-card>
