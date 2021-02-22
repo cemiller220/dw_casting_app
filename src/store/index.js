@@ -3,6 +3,8 @@ import router from "../router";
 import cast_list from "./cast_list";
 import show_order from "./show_order";
 
+// eslint-disable-next-line no-unused-vars
+let timer;
 
 export default createStore({
   state() {
@@ -10,7 +12,10 @@ export default createStore({
       season: '',
       city: '',
       possible_seasons: {'nyc': [], 'boston': []},
-      updateTimes: {}
+      updateTimes: {},
+      loggedIn: false,
+      userId: null,
+      token: null,
     }
   },
   mutations: {
@@ -21,15 +26,21 @@ export default createStore({
     },
     setUpdateTimes(state, payload) {
       state.updateTimes = payload;
-    }
+    },
+    setUser(state, payload) {
+      state.token = payload.token;
+      state.userId = payload.userId;
+      state.loggedIn = payload.loggedIn;
+    },
   },
   actions: {
     async uploadData(context, payload) {
       // this uploads data from the payload
-      const city = context.rootGetters.city;
-      const season = context.rootGetters.season;
+      const city = context.getters.city;
+      const season = context.getters.season;
+      const token = context.getters.token;
 
-      const response = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/${city}/season${season}/${payload.node}.json`, {
+      const response = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/${city}/season${season}/${payload.node}.json?auth=${token}`, {
         method: 'PUT',
         body: JSON.stringify(payload.data)
       });
@@ -41,13 +52,11 @@ export default createStore({
       }
     },
     async loadData(context, payload) {
-      // if (!payload.forceRefresh && !context.getters.shouldUpdate) {
-      //     return
-      // }
-      const city = context.rootGetters.city;
-      const season = context.rootGetters.season;
+      const city = context.getters.city;
+      const season = context.getters.season;
+      const token = context.getters.token;
 
-      const response = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/${city}/season${season}/${payload.node}.json`);
+      const response = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/${city}/season${season}/${payload.node}.json?auth=${token}`);
       const responseData = await response.json();
 
       console.log('load ' + payload.node + ' city ' + city + ' season ' + season);
@@ -61,7 +70,9 @@ export default createStore({
       }
     },
     async uploadConfig(context, payload) {
-      const response = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/current_config.json`, {
+      const token = context.getters.token;
+
+      const response = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/current_config.json?auth=${token}`, {
         method: 'PUT',
         body: JSON.stringify(payload)
       });
@@ -73,7 +84,9 @@ export default createStore({
       }
     },
     async loadConfig(context) {
-      const response = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/current_config.json`);
+      const token = context.getters.token;
+
+      const response = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/current_config.json?auth=${token}`);
       const responseData = await response.json();
 
       console.log('load config');
@@ -107,6 +120,75 @@ export default createStore({
         context.dispatch('loadData', {node: 'pieces', mutation: 'show_order/setPieces'});
         context.dispatch('show_order/calculateQuickChanges', {force: false});
       }
+    },
+    async auth(context, payload) {
+      const mode = payload.mode;
+      const apiKey = 'AIzaSyAhaLnWgFoUhx3AZnDm24lCbcjZ68skDzc';
+
+      const url_type = mode === 'login' ? 'signInWithPassword' : 'signUp';
+      let url = `https://identitytoolkit.googleapis.com/v1/accounts:${url_type}?key=${apiKey}`;
+
+      const response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          email: payload.email,
+          password: payload.password,
+          returnSecureToken: true
+        })
+      });
+
+      const responseData = await response.json();
+      if (!response.ok) {
+        throw new Error(responseData.message || 'Problem signing up')
+      }
+
+      const expiresIn = +responseData.expiresIn * 1000;
+      const expirationDate = new Date().getTime() + expiresIn;
+
+      localStorage.setItem('token', responseData.idToken);
+      localStorage.setItem('userId', responseData.localId);
+      localStorage.setItem('tokenExpiration', expirationDate);
+
+      timer = setTimeout(() => {
+        context.commit('setUser', {
+          token: null,
+          userId: null,
+          loggedIn: false
+        });
+      }, expiresIn);
+
+      context.commit('setUser', {
+        token: responseData.idToken,
+        userId: responseData.localId,
+        loggedIn: true
+      })
+    },
+    autoLogin(context) {
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId');
+      const tokenExpiration = localStorage.getItem('tokenExpiration');
+      const expiresIn = +tokenExpiration - new Date().getTime();
+
+      if (expiresIn < 0) {
+        return
+      }
+      timer = setTimeout(() => {
+        context.commit('setUser', {
+          token: null,
+          userId: null,
+          loggedIn: false
+        });
+      }, expiresIn);
+
+
+      if (token && userId) {
+        context.commit('setUser', {
+          token: token,
+          userId: userId,
+          loggedIn: true
+        })
+      }
+
     }
   },
   getters: {
@@ -127,6 +209,15 @@ export default createStore({
     },
     updateTimes(state) {
       return state.updateTimes
+    },
+    loggedIn(state) {
+      return state.loggedIn;
+    },
+    userId(state) {
+      return state.userId;
+    },
+    token(state) {
+      return state.token;
     }
   },
   modules: {
@@ -134,3 +225,7 @@ export default createStore({
     show_order: show_order
   }
 })
+
+
+// todo: add auth
+// todo: start casting!

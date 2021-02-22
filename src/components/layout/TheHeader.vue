@@ -23,6 +23,9 @@
             </div>
             <div>
                 <form class="d-flex" @submit.prevent>
+                    <div class="login-button" v-if="!loggedIn">
+                        <button class="btn btn-outline-light" @click="auth({mode: 'login', email: email, password: password})">Login</button>
+                    </div>
                     <select class="form-select form-control me-2 city-select" aria-label="city"
                             @change="updateConfig('city', $event.target.value)">
                         <option value :selected="currentCity === ''">Choose a City</option>
@@ -46,11 +49,13 @@
     export default {
         name: "TheHeader",
         data() {
-          return {
-          }
+            return {
+                email: 'dwcasting@test.com',
+                password: 'DWcasting'
+            }
         },
         computed: {
-            ...mapGetters(['city', 'season', 'nyc_seasons', 'boston_seasons']),
+            ...mapGetters(['city', 'season', 'nyc_seasons', 'boston_seasons', 'loggedIn']),
             currentCity() {
                 return this.city;
             },
@@ -77,7 +82,7 @@
             }
         },
         methods: {
-            ...mapActions(['changeCitySeason']),
+            ...mapActions(['changeCitySeason', 'auth']),
             updateConfig(field, value) {
                 console.log('update method');
                 if (field === 'city') {
@@ -97,5 +102,9 @@
 
     .season-select {
         width: 130px;
+    }
+
+    .login-button {
+        margin: 0 0.5rem;
     }
 </style>

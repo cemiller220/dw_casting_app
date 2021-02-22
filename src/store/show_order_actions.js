@@ -352,6 +352,3 @@ export default {
     },
 }
 
-// todo: change quick change score to individual counts of 1 between and 2 between
-// todo: add auth
-// todo: start casting!
