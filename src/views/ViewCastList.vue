@@ -5,42 +5,16 @@
                 <h1>Cast List</h1>
             </div>
         </div>
-        <div class="row justify-content-center">
-            <div class="col-md-auto">
-                <label for="dancerFilter" class="form-label">Filter Dancers</label>
-                <input class="form-control" list="dancerOptions"
-                       v-model="filter_dancer_name"
-                       @keyup="filterCastList"
-                       id="dancerFilter" placeholder="Type to search..."/>
-                <datalist id="dancerOptions">
-                    <option v-for="dancer in dancers" :key="'dancerFilter-' + dancer" :value="dancer"/>
-                </datalist>
-            </div>
-            <div class="col-md-auto">
-                <label for="pieceFilter" class="form-label">Filter Pieces</label>
-                <input class="form-control" list="pieceOptions"
-                       v-model="filter_piece_name"
-                       @keyup="filterCastList"
-                       id="pieceFilter" placeholder="Type to search..."/>
-                <datalist id="pieceOptions">
-                    <option v-for="piece in pieces"
-                            :key="'pieceFilter-' + piece"
-                            :value="piece"
-                    />
-                </datalist>
-            </div>
-        </div>
+        <cast-list-header :dancers="dancers" :pieces="pieces" @filterCastList="updateFilters"></cast-list-header>
     </base-card>
     <div class="row">
         <div class="col-md-8 col-sm-12">
             <base-card>
-<!--                <component :is="currentView" v-bind="currentProps"></component>-->
                 <cast-list :filtered-cast-list="filteredCastList"></cast-list>
             </base-card>
         </div>
         <div class="col-md-4 col-sm-12">
             <base-card>
-                <!--                <component :is="currentView" v-bind="currentProps"></component>-->
                 <change-log :filtered-change-log="filteredChangeLog"></change-log>
             </base-card>
         </div>
@@ -59,10 +33,11 @@
     import { mapGetters, mapActions } from 'vuex';
     import CastList from "../components/cast_list/CastList";
     import ChangeLog from "../components/cast_list/ChangeLog";
+    import CastListHeader from "../components/cast_list/CastListHeader";
 
     export default {
         name: "ViewCastList",
-        components: {CastList, BaseButton, BaseCard, ChangeLog},
+        components: {CastListHeader, CastList, BaseButton, BaseCard, ChangeLog},
         data() {
             return {
                 filter_dancer_name: '',
@@ -127,7 +102,11 @@
         },
         methods: {
             ...mapActions(['loadData']),
-            ...mapActions('cast_list', ['resetAll'])
+            ...mapActions('cast_list', ['resetAll']),
+            updateFilters(filters) {
+                this.filter_dancer_name = filters.filter_dancer_name;
+                this.filter_piece_name = filters.filter_piece_name;
+            }
         },
         created() {
             this.loadData({node: 'cast_list', mutation: 'cast_list/setCastList'});

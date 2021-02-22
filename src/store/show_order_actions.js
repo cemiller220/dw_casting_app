@@ -298,7 +298,6 @@ export default {
         context.commit('setSelectedShowOrderIndex', null);
     },
     async resetAll(context) {
-        // todo: fix this with new multi show order format
         await context.dispatch('loadData', {node: 'real_show_order', mutation: 'show_order/setShowOrder'}, {root: true});
         await context.dispatch('calculateQuickChanges', {force: false});
         await context.dispatch('calculateShowOrderStats', {show_order: context.getters.showOrder}).then((stats) => {

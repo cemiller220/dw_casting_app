@@ -227,5 +227,5 @@ export default createStore({
 })
 
 
-// todo: add auth
-// todo: start casting!
+// todo: create view pref sheet pages
+// todo: start casting
