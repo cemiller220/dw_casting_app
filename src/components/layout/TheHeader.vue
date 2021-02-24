@@ -16,6 +16,10 @@
                                      aria-current="page" to="/cast_list">View Cast List</router-link>
                     </li>
                     <li class="nav-item">
+                        <router-link class="nav-link" :class="{'active': choreographerPrefsActive}"
+                                     aria-current="page" to="/prefs/choreographer">Choreographer Prefs</router-link>
+                    </li>
+                    <li class="nav-item">
                         <router-link class="nav-link" :class="{'active': showOrderActive}"
                                      aria-current="page" to="/show_order">Show Order</router-link>
                     </li>
@@ -79,6 +83,9 @@
             },
             showOrderActive() {
                 return this.$route.path === '/show_order';
+            },
+            choreographerPrefsActive() {
+                return this.$route.path === '/prefs/choreographer'
             }
         },
         methods: {

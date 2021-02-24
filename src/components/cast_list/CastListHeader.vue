@@ -1,19 +1,19 @@
 <template>
     <div class="row justify-content-center">
         <div class="col-md-auto">
-            <label for="dancerFilter" class="form-label">Filter Dancers</label>
+            <label for="dancerOptions" class="form-label">Filter Dancers</label>
             <input class="form-control" list="dancerOptions"
                    v-model="filter_dancer_name"
-                   id="dancerFilter" placeholder="Type to search..."/>
+                   placeholder="Type to search..."/>
             <datalist id="dancerOptions">
                 <option v-for="dancer in dancers" :key="'dancerFilter-' + dancer" :value="dancer"/>
             </datalist>
         </div>
         <div class="col-md-auto">
-            <label for="pieceFilter" class="form-label">Filter Pieces</label>
+            <label for="pieceOptions" class="form-label">Filter Pieces</label>
             <input class="form-control" list="pieceOptions"
                    v-model="filter_piece_name"
-                   id="pieceFilter" placeholder="Type to search..."/>
+                   placeholder="Type to search..."/>
             <datalist id="pieceOptions">
                 <option v-for="piece in pieces"
                         :key="'pieceFilter-' + piece"

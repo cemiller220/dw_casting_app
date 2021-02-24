@@ -2,6 +2,7 @@ import { createStore } from 'vuex'
 import router from "../router";
 import cast_list from "./cast_list";
 import show_order from "./show_order";
+import choreographer_prefs from "./choreographer_prefs";
 
 // eslint-disable-next-line no-unused-vars
 let timer;
@@ -222,7 +223,8 @@ export default createStore({
   },
   modules: {
     cast_list: cast_list,
-    show_order: show_order
+    show_order: show_order,
+    choreographer_prefs: choreographer_prefs
   }
 })
 
