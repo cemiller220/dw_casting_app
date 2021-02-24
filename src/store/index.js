@@ -120,6 +120,9 @@ export default createStore({
         context.dispatch('loadData', {node: 'show_order', mutation: 'show_order/setAllShowOrders'});
         context.dispatch('loadData', {node: 'pieces', mutation: 'show_order/setPieces'});
         context.dispatch('show_order/calculateQuickChanges', {force: false});
+      } else if (payload.current_path === '/prefs/choreographer') {
+        context.dispatch('loadData', {node: 'choreographer_prefs', mutation: 'choreographer_prefs/setPrefsAll'});
+        context.dispatch('loadData', {node: 'cast_list', mutation: 'cast_list/setCastList'});
       }
     },
     async auth(context, payload) {

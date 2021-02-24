@@ -4,7 +4,7 @@ import HomePage from "../views/HomePage";
 const routes = [
   {path: '/', name: 'Home', component: HomePage},
   {path: '/prefs/choreographer', name: 'ChoreographerPrefs',
-    component: () => import('../views/ChoreographerPrefs.vue')},
+    component: () => import('../views/ViewChoreographerPrefs.vue')},
   {path: '/prefs/dancer', name: 'DancerPrefs',
     component: () => import('../views/DancerPrefs.vue')},
   {path: '/run_casting', name: 'RunCasting',

@@ -2,30 +2,20 @@ export default {
     namespaced: true,
     state() {
         return {
-            prefsAll: [
-                {
-                    name: 'dance1',
-                    choreographer: 'firstName lastName',
-                    prefs: {
-                        favorites: ['dancer1', 'dancer2'],
-                        alternates: ['dancer3', 'dancer4']
-                    }
-                },
-                {
-                    name: 'dance2',
-                    choreographer: 'firstName2 lastName2',
-                    prefs: {
-                        favorites: ['dancer13', 'dancer22'],
-                        alternates: ['dancer36', 'dancer44']
-                    }
-                }
-            ],
-            currentIndex: 0
+            prefsAll: [],
+            currentIndex: 0,
+            showDropped: false,
         }
     },
     mutations: {
         setCurrentIndex(state, payload) {
             state.currentIndex = payload;
+        },
+        setPrefsAll(state, payload) {
+            state.prefsAll = payload || [];
+        },
+        setShowDropped(state, payload) {
+            state.showDropped = payload;
         }
     },
     actions: {
@@ -46,6 +36,9 @@ export default {
                     context.commit('setCurrentIndex', new_index);
                 }
             }
+        },
+        toggleShowDropped(context) {
+            context.commit('setShowDropped', !context.getters.showDropped)
         }
     },
     getters: {
@@ -57,6 +50,9 @@ export default {
         },
         currentIndex(state) {
             return state.currentIndex;
+        },
+        showDropped(state) {
+            return state.showDropped;
         }
     }
 }

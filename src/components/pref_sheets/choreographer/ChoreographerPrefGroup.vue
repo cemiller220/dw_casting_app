@@ -6,10 +6,10 @@
             </div>
             <div class="card-body text-center">
                 <ul class="list-group list my--3">
-                    <li class="list-group-item" v-for="(dancer, index) in prefs" :key="dancer">
-                        <base-badge :title="index+starting_index" color="blue" :clickable="false"></base-badge>
-                        {{ dancer }}
-                    </li>
+                    <choreographer-pref-item v-for="(dancer, index) in prefs" :key="dancer"
+                                             :dancer="dancer"
+                                             :index="index+starting_index" :current_cast="current_cast">
+                    </choreographer-pref-item>
                 </ul>
             </div>
         </div>
@@ -17,11 +17,12 @@
 </template>
 
 <script>
-    import BaseBadge from "../../UI/BaseBadge";
+
+    import ChoreographerPrefItem from "./ChoreographerPrefItem";
     export default {
         name: "ChoreographerPrefGroup",
-        components: {BaseBadge},
-        props: ['type', 'prefs', 'starting_index']
+        components: {ChoreographerPrefItem},
+        props: ['type', 'prefs', 'starting_index', 'current_cast'],
     }
 </script>
 
