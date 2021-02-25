@@ -1,7 +1,7 @@
 <template>
     <div>
         <base-card>
-            <pref-header></pref-header>
+            <pref-header type="choreographer"></pref-header>
         </base-card>
         <base-card>
             <choreographer-pref-info>

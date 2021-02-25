@@ -30,7 +30,7 @@ export default {
         }
     },
     actions: {
-        changePref(context, payload) {
+        changeChoreographerPref(context, payload) {
             let new_index = -1;
             if (payload.type === 'next') {
                 const current_index = +context.getters.currentIndex;

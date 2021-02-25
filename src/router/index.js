@@ -6,7 +6,7 @@ const routes = [
   {path: '/prefs/choreographer', name: 'ChoreographerPrefs',
     component: () => import('../views/ViewChoreographerPrefs.vue')},
   {path: '/prefs/dancer', name: 'DancerPrefs',
-    component: () => import('../views/DancerPrefs.vue')},
+    component: () => import('../views/ViewDancerPrefs.vue')},
   {path: '/run_casting', name: 'RunCasting',
     component: () => import('../views/RunCasting.vue')},
   {path: '/show_order', name: 'ShowOrder',
