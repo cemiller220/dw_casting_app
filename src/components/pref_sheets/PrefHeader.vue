@@ -18,15 +18,17 @@
 
 <script>
     import BaseButton from "../UI/BaseButton";
-    import {mapActions} from 'vuex';
+    import {mapActions, mapGetters} from 'vuex';
     export default {
         name: "PrefHeader",
         components: {BaseButton},
-        props: ['pieces'],
         data() {
             return {
                 jump_dance_name: ''
             }
+        },
+        computed: {
+            ...mapGetters('choreographer_prefs', ['pieces'])
         },
         methods: {
             ...mapActions('choreographer_prefs', ['changePref'])

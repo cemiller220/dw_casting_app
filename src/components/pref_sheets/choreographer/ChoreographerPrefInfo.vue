@@ -1,13 +1,13 @@
 <template>
     <div class="row justify-content-center">
         <div class="col-auto">
-            <h3>Dance: <strong>{{ name }}</strong></h3>
+            <h3>Dance: <strong>{{ currentPref.name }}</strong></h3>
         </div>
     </div>
     <div class="row justify-content-center">
         <div class="col-auto">
             <h4>Choreographer:
-                <strong>{{ choreographer }}</strong>
+                <strong>{{ currentPref.choreographer }}</strong>
             </h4>
         </div>
     </div>
@@ -26,9 +26,8 @@
     export default {
         name: "ChoreographerPrefInfo",
         components: {BaseButton},
-        props: ['name', 'choreographer'],
         computed: {
-            ...mapGetters('choreographer_prefs', ['showDropped'])
+            ...mapGetters('choreographer_prefs', ['showDropped', 'currentPref'])
         },
         methods: {
             ...mapActions('choreographer_prefs', ['toggleShowDropped'])
