@@ -9,7 +9,7 @@
             </dancer-pref-info>
         </base-card>
         <div class="row justify-content-center">
-            <div class="col-6">
+            <div class="col-4">
                 <base-card>
                     <dancer-pref-group>
                     </dancer-pref-group>
@@ -29,11 +29,12 @@
         name: "DancerPrefs",
         components: {DancerPrefGroup, DancerPrefInfo, PrefHeader, BaseCard},
         methods: {
-            ...mapActions(['loadData']),
+            ...mapActions('dancer_prefs', ['loadAllData', 'inializeData'])
         },
         created() {
-            this.loadData({node: 'dancer_prefs', mutation: 'dancer_prefs/setPrefsAll'});
-            // this.loadData({node: 'cast_list', mutation: 'cast_list/setCastList'});
+            this.loadAllData().then(() => {
+                this.inializeData();
+            });
         }
     }
 </script>

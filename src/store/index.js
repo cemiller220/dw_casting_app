@@ -114,6 +114,7 @@ export default createStore({
       context.dispatch('updateCurrentPageData', {current_path: router.currentRoute.value.path});
     },
     updateCurrentPageData(context, payload) {
+      console.log('update');
       if (payload.current_path === '/cast_list') {
         context.dispatch('loadData', {node: 'cast_list', mutation: 'cast_list/setCastList'});
         context.dispatch('loadData', {node: 'change_log', mutation: 'cast_list/setChangeLog'});
@@ -125,8 +126,10 @@ export default createStore({
         context.dispatch('loadData', {node: 'choreographer_prefs', mutation: 'choreographer_prefs/setPrefsAll'});
         context.dispatch('loadData', {node: 'cast_list', mutation: 'cast_list/setCastList'});
       } else if (payload.current_path === '/prefs/dancer') {
-        context.dispatch('loadData', {node: 'dancer_prefs', mutation: 'dancer_prefs/setPrefsAll'});
-        // context.dispatch('loadData', {node: 'cast_list', mutation: 'cast_list/setCastList'});
+        context.dispatch('dancer_prefs/loadAllData').then(() => {
+          context.dispatch('dancer_prefs/inializeData')
+        });
+
       }
     },
     async auth(context, payload) {
