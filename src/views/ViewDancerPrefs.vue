@@ -1,5 +1,4 @@
 <template>
-    <h2>Dancer Prefs</h2>
     <div>
         <base-card>
             <pref-header type="dancer"></pref-header>
