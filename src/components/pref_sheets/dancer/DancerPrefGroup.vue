@@ -19,17 +19,22 @@
 
 <script>
     import DancerPrefItem from "./DancerPrefItem";
+    import {mapGetters} from "vuex";
     export default {
         name: "DancerPrefGroup",
         components: {DancerPrefItem},
         data() {
             return {
-                currentPref: {prefs: ['dance1', 'dance2']},
                 currentStatuses: {
                     dance1: {preference: 'favorite', status: 'cast', rank: 5},
                     dance2: {preference: 'alternate', status: 'waitlist', rank: 27},
+                    dance3: {preference: 'alternate', status: 'waitlist', rank: 27},
+                    dance4: {preference: 'alternate', status: 'waitlist', rank: 27},
                 }
             }
+        },
+        computed: {
+            ...mapGetters('dancer_prefs', ['currentPref'])
         }
     }
 </script>

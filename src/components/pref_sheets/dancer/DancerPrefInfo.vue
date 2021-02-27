@@ -17,24 +17,24 @@
             <h4>Notes: {{ currentPref.notes }}</h4>
         </div>
     </div>
-    <div class="row justify-content-center">
-        <div class="col-auto">
-            <base-button @click="toggleShowDropped">
-                {{ showDropped ? 'Hide' : 'Show' }} Dropped Dancers
-            </base-button>
-        </div>
-    </div>
+<!--    <div class="row justify-content-center">-->
+<!--        <div class="col-auto">-->
+<!--            <base-button @click="toggleShowDropped">-->
+<!--                {{ showDropped ? 'Hide' : 'Show' }} Dropped Dancers-->
+<!--            </base-button>-->
+<!--        </div>-->
+<!--    </div>-->
 </template>
 
 <script>
-    import BaseButton from "../../UI/BaseButton";
+    // import BaseButton from "../../UI/BaseButton";
+    import {mapGetters} from 'vuex';
+
     export default {
         name: "DancerPrefInfo",
-        components: {BaseButton},
-        data() {
-            return {
-                currentPref: {name: 'test', max_dances: 3, max_days: 2, notes: 'this is a note'}
-            }
+        // components: {BaseButton},
+        computed: {
+            ...mapGetters('dancer_prefs', ['currentPref'])
         }
     }
 </script>

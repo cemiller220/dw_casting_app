@@ -24,9 +24,17 @@
     import PrefHeader from "../components/pref_sheets/PrefHeader";
     import DancerPrefInfo from "../components/pref_sheets/dancer/DancerPrefInfo";
     import DancerPrefGroup from "../components/pref_sheets/dancer/DancerPrefGroup";
+    import {mapActions} from "vuex";
     export default {
         name: "DancerPrefs",
-        components: {DancerPrefGroup, DancerPrefInfo, PrefHeader, BaseCard}
+        components: {DancerPrefGroup, DancerPrefInfo, PrefHeader, BaseCard},
+        methods: {
+            ...mapActions(['loadData']),
+        },
+        created() {
+            this.loadData({node: 'dancer_prefs', mutation: 'dancer_prefs/setPrefsAll'});
+            // this.loadData({node: 'cast_list', mutation: 'cast_list/setCastList'});
+        }
     }
 </script>
 

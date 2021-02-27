@@ -5,7 +5,7 @@
         </div>
         <div class="col-auto">
             <label for="pieceOptions" class="form-label">Jump to {{ jumpField }}</label>
-            <input class="form-control" list="pieceOptions" v-model="jump_name" @input="changePref({type: 'jump', piece: jump_name})"/>
+            <input class="form-control" list="pieceOptions" v-model="jump_name" @input="changePref({type: 'jump', to: jump_name})"/>
             <datalist id="pieceOptions">
                 <option v-for="option in options" :key="'filter-' + option" :value="option">{{ option }}</option>
             </datalist>
@@ -52,6 +52,7 @@
             ...mapActions('choreographer_prefs', ['changeChoreographerPref']),
             ...mapActions('dancer_prefs', ['changeDancerPref']),
             changePref(payload) {
+                console.log('changePref');
                 if (this.type === 'choreographer') {
                     this.changeChoreographerPref(payload);
                 } else if (this.type === 'dancer') {

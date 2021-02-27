@@ -3,6 +3,7 @@ import router from "../router";
 import cast_list from "./cast_list";
 import show_order from "./show_order";
 import choreographer_prefs from "./choreographer_prefs";
+import dancer_prefs from "./dancer_prefs";
 
 // eslint-disable-next-line no-unused-vars
 let timer;
@@ -123,6 +124,9 @@ export default createStore({
       } else if (payload.current_path === '/prefs/choreographer') {
         context.dispatch('loadData', {node: 'choreographer_prefs', mutation: 'choreographer_prefs/setPrefsAll'});
         context.dispatch('loadData', {node: 'cast_list', mutation: 'cast_list/setCastList'});
+      } else if (payload.current_path === '/prefs/dancer') {
+        context.dispatch('loadData', {node: 'dancer_prefs', mutation: 'dancer_prefs/setPrefsAll'});
+        // context.dispatch('loadData', {node: 'cast_list', mutation: 'cast_list/setCastList'});
       }
     },
     async auth(context, payload) {
@@ -227,7 +231,8 @@ export default createStore({
   modules: {
     cast_list: cast_list,
     show_order: show_order,
-    choreographer_prefs: choreographer_prefs
+    choreographer_prefs: choreographer_prefs,
+    dancer_prefs: dancer_prefs
   }
 })
 

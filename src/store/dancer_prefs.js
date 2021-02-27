@@ -3,10 +3,8 @@ export default {
     state() {
         return {
             prefsAll: [],
-            currentPref: {},
             currentIndex: 0,
-            // currentCast: [],
-            showDropped: true
+            currentPref: {}
         }
     },
     mutations: {
@@ -22,18 +20,16 @@ export default {
         setCurrentPref(state, payload) {
             state.currentPref = payload;
         },
-        // setCurrentCast(state, payload) {
-        //     state.currentCast = payload;
-        // },
-        setShowDropped(state, payload) {
-            state.showDropped = payload;
-        }
     },
     actions: {
-        changeChoreographerPref(context, payload) {
+        changeDancerPref(context, payload) {
+            console.log('changeDancerPref');
+            console.log(payload);
             let new_index = -1;
             if (payload.type === 'next') {
                 const current_index = +context.getters.currentIndex;
+                console.log(current_index);
+                console.log(context.getters.prefsAll.length-1);
                 if (current_index < context.getters.prefsAll.length-1) {
                     new_index = current_index + 1;
                 }
@@ -43,8 +39,10 @@ export default {
                     new_index = current_index - 1;
                 }
             } else if (payload.type === 'jump') {
-                new_index = context.getters.pieces.indexOf(payload.to);
+                new_index = context.getters.dancers.indexOf(payload.to);
             }
+
+            console.log(new_index);
 
             if (new_index !== -1) {
                 const new_pref = context.getters.prefsAll[new_index];
@@ -53,31 +51,19 @@ export default {
                 // context.commit('setCurrentCast', context.rootGetters['cast_list/castList'].filter(piece => piece.name === new_pref.name)[0].cast);
             }
         },
-        toggleShowDropped(context) {
-            context.commit('setShowDropped', !context.getters.showDropped)
-        }
     },
     getters: {
+        dancers(state) {
+            return state.prefsAll.map(pref => pref.name)
+        },
         prefsAll(state) {
             return state.prefsAll;
         },
-        pieces(state) {
-            return state.prefsAll.map(pref => pref.name)
+        currentPref(state) {
+            return state.currentPref;
         },
         currentIndex(state) {
             return state.currentIndex;
-        },
-        currentPref(state) {
-            return state.currentPref
-        },
-        // currentCast(state) {
-        //     return state.currentCast
-        // },
-        showDropped(state) {
-            return state.showDropped;
-        },
-        currentPiece(state) {
-            return state.currentPref.name;
         }
     }
 }
