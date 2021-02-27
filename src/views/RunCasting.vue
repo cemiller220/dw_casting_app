@@ -1,10 +1,12 @@
 <template>
-    <h2>Run Casting</h2>
+    <calendar-view></calendar-view>
 </template>
 
 <script>
+    import CalendarView from "../components/run_casting/CalendarView";
     export default {
-        name: "RunCasting"
+        name: "RunCasting",
+        components: {CalendarView}
     }
 </script>
 
