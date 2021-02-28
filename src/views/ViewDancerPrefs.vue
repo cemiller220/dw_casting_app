@@ -25,7 +25,7 @@
     import DancerPrefInfo from "../components/pref_sheets/dancer/DancerPrefInfo";
     import DancerPrefGroup from "../components/pref_sheets/dancer/DancerPrefGroup";
     import {mapActions, mapGetters} from "vuex";
-    import CalendarView from "../components/calendar_view/CalendarView";
+    import CalendarView from "../components/pref_sheets/dancer/calendar_view/CalendarView";
     export default {
         name: "DancerPrefs",
         components: {CalendarView, DancerPrefGroup, DancerPrefInfo, PrefHeader, BaseCard},

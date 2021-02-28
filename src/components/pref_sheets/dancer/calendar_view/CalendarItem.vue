@@ -9,7 +9,7 @@
 </template>
 
 <script>
-    import BaseBadge from "../UI/BaseBadge";
+    import BaseBadge from "../../../UI/BaseBadge";
     export default {
         name: "CalendarItem",
         components: {BaseBadge},

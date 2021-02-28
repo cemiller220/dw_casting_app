@@ -24,8 +24,8 @@
 </template>
 
 <script>
-    import BaseCard from "../UI/BaseCard";
-    import DancerPrefItem from "../pref_sheets/dancer/DancerPrefItem";
+    import BaseCard from "../../../UI/BaseCard";
+    import DancerPrefItem from "../DancerPrefItem";
     import {mapGetters} from "vuex";
 
     export default {
