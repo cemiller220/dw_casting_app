@@ -1,8 +1,8 @@
 import { createStore } from 'vuex'
 import router from "../router";
-import cast_list from "./cast_list";
-import show_order from "./show_order";
-import prefs from "./prefs";
+import cast_list from "./modules/cast_list";
+import show_order from "./modules/show_order";
+import prefs from "./modules/prefs";
 
 // eslint-disable-next-line no-unused-vars
 let timer;
@@ -234,5 +234,5 @@ export default createStore({
 })
 
 
-// todo: create view pref sheet pages
-// todo: start casting
+// todo: setup casting functionality with no auto-suggestions
+// todo: add auto-suggestions
