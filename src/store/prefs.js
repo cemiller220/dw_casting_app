@@ -9,6 +9,7 @@ export default {
             currentIndex: 0,
             currentPref: {},
             currentStatuses: {},
+            currentCast: {},
             showDropped: true,
             view: 'list'
         }
@@ -28,6 +29,9 @@ export default {
         },
         setCurrentStatuses(state, payload) {
             state.currentStatuses = payload;
+        },
+        setCurrentCast(state, payload) {
+            state.currentCast = payload;
         },
         setShowDropped(state, payload) {
             state.showDropped = payload;
@@ -53,6 +57,10 @@ export default {
             let current_pref = {};
             if (current_path === '/prefs/choreographer') {
                 current_pref = context.getters.choreographerPrefsAll[0];
+                context.dispatch('calculateCurrentCast', {currentPref: current_pref}).then((cast) => {
+                    console.log(cast);
+                    context.commit('setCurrentCast', cast);
+                });
             } else if (current_path === '/prefs/dancer') {
                 current_pref = context.getters.dancerPrefsAll[0];
                 context.dispatch('calculateStatuses', {currentPref: current_pref}).then((statuses) => {
@@ -99,6 +107,11 @@ export default {
                     context.dispatch('calculateStatuses', {currentPref: new_pref}).then((statuses) => {
                         context.commit('setCurrentStatuses', statuses);
                     });
+                } else if (current_path === '/prefs/choreographer') {
+                    context.dispatch('calculateCurrentCast', {currentPref: new_pref}).then((cast) => {
+                        console.log(cast);
+                        context.commit('setCurrentCast', cast);
+                    });
                 }
             }
         },
@@ -133,6 +146,16 @@ export default {
 
             return statuses;
         },
+        calculateCurrentCast(context, payload) {
+            const cast_list = context.rootGetters['cast_list/castList'];
+            const cast = cast_list.filter(piece => piece.name === payload.currentPref.name)[0].cast;
+            let cast_reformat = {}
+            cast.forEach((dancer) => {
+                cast_reformat[dancer.name] = dancer.status;
+            });
+
+            return cast_reformat;
+        },
         toggleShowDropped(context) {
             context.commit('setShowDropped', !context.getters.showDropped)
         },
@@ -165,6 +188,9 @@ export default {
         },
         currentStatuses(state) {
             return state.currentStatuses;
+        },
+        currentCast(state) {
+            return state.currentCast;
         },
         showDropped(state) {
             return state.showDropped;

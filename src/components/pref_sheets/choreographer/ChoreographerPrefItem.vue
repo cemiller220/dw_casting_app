@@ -12,17 +12,17 @@
     export default {
         name: "ChoreographerPrefItem",
         components: {BaseBadge},
-        props: ['dancer', 'index', 'currentCast'],
+        props: ['dancer', 'index', 'status'],
         computed: {
             ...mapGetters('prefs', ['showDropped']),
             showDancer() {
                 return (this.dancerStatusClass === '' && this.showDropped) || (this.dancerStatusClass !== '')
             },
             dancerStatusClass() {
-                if (!this.currentCast || this.currentCast.filter(dancer => dancer.name === this.dancer).length === 0) {
+                if (!this.status) {
                     return '';
                 } else {
-                    return this.currentCast.filter(dancer => dancer.name === this.dancer)[0].status === 'cast' ? 'list-group-item-success' : 'list-group-item-secondary';
+                    return this.status === 'cast' ? 'list-group-item-success' : 'list-group-item-secondary';
                 }
             }
         }
