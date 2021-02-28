@@ -41,10 +41,6 @@ export default {
         }
     },
     actions: {
-        clearData(context) {
-            context.commit('setDancerPrefsAll', []);
-            context.commit('setChoreographerPrefsAll', []);
-        },
         async loadAllData(context) {
             console.log('load all data');
             await context.dispatch('loadData', {node: 'dancer_prefs', mutation: 'prefs/setDancerPrefsAll'}, {root: true});

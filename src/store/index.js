@@ -121,7 +121,7 @@ export default createStore({
         context.dispatch('loadData', {node: 'show_order', mutation: 'show_order/setAllShowOrders'});
         context.dispatch('loadData', {node: 'pieces', mutation: 'show_order/setPieces'});
         context.dispatch('show_order/calculateQuickChanges', {force: false});
-      } else if (payload.current_path === '/prefs/dancer' || payload.current_path === '/prefs/choreographer') {
+      } else if (['/prefs/dancer', '/prefs/choreographer', '/run_casting'].indexOf(payload.current_path) !== -1) {
         context.dispatch('prefs/loadAllData').then(() => {
           context.dispatch('prefs/inializeData')
         });

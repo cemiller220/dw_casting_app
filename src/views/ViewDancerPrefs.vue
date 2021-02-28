@@ -33,15 +33,12 @@
             ...mapGetters('prefs', ['view'])
         },
         methods: {
-            ...mapActions('prefs', ['loadAllData', 'inializeData', 'clearData'])
+            ...mapActions('prefs', ['loadAllData', 'inializeData'])
         },
         created() {
-            this.clearData().then(() => {
-                this.loadAllData().then(() => {
-                    this.inializeData();
-                });
-            })
-
+            this.loadAllData().then(() => {
+                this.inializeData();
+            });
         }
     }
 </script>

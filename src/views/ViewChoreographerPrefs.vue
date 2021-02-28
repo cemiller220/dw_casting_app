@@ -34,7 +34,7 @@
         name: "ChoreographerPrefs",
         components: {ChoreographerPrefGroup, ChoreographerPrefInfo, BaseCard, PrefHeader},
         methods: {
-            ...mapActions('prefs', ['loadAllData', 'inializeData', 'clearData'])
+            ...mapActions('prefs', ['loadAllData', 'inializeData'])
         },
         created() {
             this.loadAllData().then(() => {
