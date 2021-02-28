@@ -7,11 +7,11 @@
             <dancer-pref-info>
             </dancer-pref-info>
         </base-card>
-        <calendar-view v-if="view === 'calendar'"></calendar-view>
+        <calendar-view v-if="view === 'calendar'" :type="page"></calendar-view>
         <div class="row justify-content-center" v-if="view === 'list'">
             <div class="col-4">
                 <base-card>
-                    <dancer-pref-group>
+                    <dancer-pref-group :type="page">
                     </dancer-pref-group>
                 </base-card>
             </div>
@@ -30,15 +30,25 @@
         name: "DancerPrefs",
         components: {CalendarView, DancerPrefGroup, DancerPrefInfo, PrefHeader, BaseCard},
         computed: {
-            ...mapGetters('prefs', ['view'])
+            ...mapGetters('prefs', ['view']),
+            page() {
+                if (this.$router.currentRoute.value.fullPath === '/prefs/dancer') {
+                    return 'pref'
+                } else {
+                    return 'cast'
+                }
+            }
         },
         methods: {
-            ...mapActions('prefs', ['loadAllData', 'inializeData'])
+            ...mapActions('prefs', ['loadAllData', 'inializeData', 'toggleView'])
         },
         created() {
             this.loadAllData().then(() => {
                 this.inializeData();
             });
+            if (this.$router.currentRoute.value.fullPath === '/run_casting') {
+                this.toggleView();
+            }
         }
     }
 </script>

@@ -10,6 +10,7 @@ export default {
             currentPref: {},
             currentStatuses: {},
             currentCast: {},
+            rehearsalSchedule: null,
             showDropped: true,
             view: 'list'
         }
@@ -33,6 +34,9 @@ export default {
         setCurrentCast(state, payload) {
             state.currentCast = payload;
         },
+        setRehearsalSchedule(state, payload) {
+            state.rehearsalSchedule = payload || null;
+        },
         setShowDropped(state, payload) {
             state.showDropped = payload;
         },
@@ -46,6 +50,7 @@ export default {
             await context.dispatch('loadData', {node: 'dancer_prefs', mutation: 'prefs/setDancerPrefsAll'}, {root: true});
             await context.dispatch('loadData', {node: 'cast_list', mutation: 'cast_list/setCastList'}, {root: true});
             await context.dispatch('loadData', {node: 'choreographer_prefs', mutation: 'prefs/setChoreographerPrefsAll'}, {root: true});
+            await context.dispatch('loadData', {node: 'rehearsal_schedule', mutation: 'prefs/setRehearsalSchedule'}, {root: true});
         },
         inializeData(context) {
             console.log('initialize data');
@@ -57,7 +62,7 @@ export default {
                     console.log(cast);
                     context.commit('setCurrentCast', cast);
                 });
-            } else if (current_path === '/prefs/dancer') {
+            } else if (current_path === '/prefs/dancer' || current_path === '/run_casting') {
                 current_pref = context.getters.dancerPrefsAll[0];
                 context.dispatch('calculateStatuses', {currentPref: current_pref}).then((statuses) => {
                     console.log(statuses);
@@ -75,7 +80,7 @@ export default {
             if (current_path === '/prefs/choreographer') {
                 prefs_all = context.getters.choreographerPrefsAll;
                 field = 'pieces';
-            } else if (current_path === '/prefs/dancer') {
+            } else if (current_path === '/prefs/dancer' || current_path === '/run_casting') {
                 prefs_all = context.getters.dancerPrefsAll;
                 field = 'dancers';
             }
@@ -99,7 +104,7 @@ export default {
                 const new_pref = prefs_all[new_index];
                 context.commit('setCurrentIndex', new_index);
                 context.commit('setCurrentPref', new_pref);
-                if (current_path === '/prefs/dancer') {
+                if (current_path === '/prefs/dancer' || current_path === '/run_casting') {
                     context.dispatch('calculateStatuses', {currentPref: new_pref}).then((statuses) => {
                         context.commit('setCurrentStatuses', statuses);
                     });
@@ -113,14 +118,11 @@ export default {
         },
         calculateStatuses(context, payload) {
             console.log('calculate statuses');
-            console.log(payload);
             const choreographer_prefs = context.getters.choreographerPrefsAll;
             const cast_list = context.rootGetters['cast_list/castList'];
-            console.log(cast_list);
 
             let statuses = {};
             payload.currentPref.prefs.forEach((piece) => {
-                console.log(piece);
                 let preference = 'not preffed';
                 let rank = '';
                 let choreographer_pref = choreographer_prefs.find(pref => pref.name === piece).prefs;
@@ -145,7 +147,7 @@ export default {
         calculateCurrentCast(context, payload) {
             const cast_list = context.rootGetters['cast_list/castList'];
             const cast = cast_list.filter(piece => piece.name === payload.currentPref.name)[0].cast;
-            let cast_reformat = {}
+            let cast_reformat = {};
             cast.forEach((dancer) => {
                 cast_reformat[dancer.name] = dancer.status;
             });
@@ -187,6 +189,9 @@ export default {
         },
         currentCast(state) {
             return state.currentCast;
+        },
+        rehearsalSchedule(state) {
+            return state.rehearsalSchedule;
         },
         showDropped(state) {
             return state.showDropped;

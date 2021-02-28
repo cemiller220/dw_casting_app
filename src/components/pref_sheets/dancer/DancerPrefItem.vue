@@ -2,24 +2,31 @@
     <li class="list-group-item" :class="castStatusClass" v-if="showPiece">
         <base-badge :title="index" color="blue" :clickable="false" class="float-start"></base-badge>
         {{ piece }}
-        <div class="row">
+        <div class="row" v-if="view === 'calendar'">
             <div class="col text-center">
-        <base-badge :title="currentStatus.rank" :color="statusBadgeColor" v-if="showStatusBadge" ></base-badge>
+                <base-badge :title="currentStatus.rank" :color="statusBadgeColor" v-if="showStatusBadge" ></base-badge>
             </div>
         </div>
+        <base-badge :title="currentStatus.rank" :color="statusBadgeColor" v-else-if="showStatusBadge" class="float-end"></base-badge>
+        <div v-if="type === 'cast'">
+            <br/>
+            <casting-helpers ></casting-helpers>
+        </div>
     </li>
+
 </template>
 
 <script>
     import BaseBadge from "../../UI/BaseBadge";
     import {mapGetters} from 'vuex';
+    import CastingHelpers from "./casting_helpers/CastingHelpers";
 
     export default {
         name: "DancerPrefItem",
-        components: {BaseBadge},
-        props: ['index', 'piece', 'currentStatus'],
+        components: {CastingHelpers, BaseBadge},
+        props: ['index', 'piece', 'currentStatus', 'type'],
         computed: {
-            ...mapGetters('prefs', ['showDropped']),
+            ...mapGetters('prefs', ['showDropped', 'view']),
             castStatusClass() {
                 if (this.currentStatus) {
                     if (this.currentStatus.status === 'cast') {

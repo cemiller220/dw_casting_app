@@ -1,21 +1,22 @@
 <template>
-    <base-card v-if="currentPref && currentStatuses">
+    <base-card v-if="currentPref && currentStatuses && rehearsalSchedule">
         <div class="row justify-content-center">
-            <div class="col" v-for="(_, day) in rehearsal_schedule.first" :key="day + 'title'">
+            <div class="col" v-for="day in days_order" :key="day + 'title'">
                 <base-card class="text-center">
                 <h3>{{ day }}</h3>
                 </base-card>
 
             </div>
         </div>
-        <div class="row justify-content-center" v-for="(days, time_slot) in rehearsal_schedule" :key="time_slot" >
-            <div class="col" v-for="(pieces, day) in days" :key="day + '-' + time_slot" style="padding: 0 10px 20px 10px;">
+        <div class="row justify-content-center" v-for="time_slot in times_order" :key="time_slot" >
+            <div class="col schedule-col" v-for="day in days_order" :key="day + '-' + time_slot">
                 <base-card class="h-100 ">
-                    <div class="item-wrapper" v-for="piece in pieces" :key="piece" :piece="piece" v-show="pieceIndex(piece) !== -1">
+                    <div class="item-wrapper" v-for="piece in rehearsalSchedule[time_slot][day]" :key="piece" :piece="piece" v-show="pieceIndex(piece) !== -1">
                         <dancer-pref-item :index="pieceIndex(piece)"
                                           :piece="piece"
                                           :currentStatus="currentStatuses[piece]">
                         </dancer-pref-item>
+                        <casting-helpers v-if="type === 'cast'"></casting-helpers>
                     </div>
                 </base-card>
             </div>
@@ -27,35 +28,20 @@
     import BaseCard from "../../../UI/BaseCard";
     import DancerPrefItem from "../DancerPrefItem";
     import {mapGetters} from "vuex";
+    import CastingHelpers from "../casting_helpers/CastingHelpers";
 
     export default {
         name: "CalendarView",
-        components: {DancerPrefItem, BaseCard},
+        components: {CastingHelpers, DancerPrefItem, BaseCard},
+        props: ['type'],
         data() {
             return {
-                rehearsal_schedule: {'first': {'Sunday': ['Domino'],
-                        'Monday': ['Someone in the Crowd', 'Bennie and the Jets'],
-                        'Tuesday': ['Tempo', "We Don't Eat"],
-                        'Wednesday': ['Bury a Friend', 'Toy Story'],
-                        'Thursday': ['Broken Vow', 'Toxic']
-                    },
-                    'second': {'Sunday': ['The Chain', 'Peace May Come'],
-                        'Monday': ["Throwin' it Back", 'Slow Dancing in a Burning Room'],
-                        'Tuesday': ['Shadowboxing', 'I Have Nothing'],
-                        'Wednesday': ['90 Days', 'Sick Boy'],
-                        'Thursday': ['Bad Guy', 'Heartbeat']
-                    },
-                    'third': {'Sunday': ['An Evening I Will Not Forget', 'Love So Soft'],
-                        'Monday': ['New Americana', "I Don't Think About You"],
-                        'Tuesday': ['Sing', 'As the Water'],
-                        'Wednesday': ['Knock on Wood', 'Eve'],
-                        'Thursday': ['Bailar', 'Hollywood']
-                    }
-                }
+                times_order: ['first', 'second', 'third'],
+                days_order: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'],
             }
         },
         computed: {
-            ...mapGetters('prefs', ['currentPref', 'currentStatuses'])
+            ...mapGetters('prefs', ['currentPref', 'currentStatuses', 'rehearsalSchedule'])
         },
         methods: {
             pieceIndex(piece) {
@@ -72,5 +58,9 @@
     .item-wrapper {
         padding: 5px 0;
         border-radius: 5px;
+    }
+
+    .schedule-col {
+        padding: 0 10px 20px 10px;
     }
 </style>
