@@ -26,7 +26,7 @@
         components: {ChoreographerPrefItem},
         props: ['type'],
         computed: {
-            ...mapGetters('choreographer_prefs', ['currentPref', 'currentPiece']),
+            ...mapGetters('prefs', ['currentPref']),
             ...mapGetters('cast_list', ['castList']),
             startingIndex() {
                 return this.type === 'Favorites'? 1 : this.currentPref.prefs.favorites.length+1;
@@ -37,6 +37,12 @@
                 }
                 return null;
             },
+            currentPiece() {
+                if (this.currentPref) {
+                    return this.currentPref.name;
+                }
+                return '';
+            }
         }
     }
 </script>

@@ -1,8 +1,11 @@
+import router from "../router";
+
 export default {
     namespaced: true,
     state() {
         return {
-            prefsAll: [],
+            dancerPrefsAll: [],
+            choreographerPrefsAll: [],
             currentIndex: 0,
             currentPref: {},
             currentStatuses: {},
@@ -11,11 +14,11 @@ export default {
         }
     },
     mutations: {
-        setPrefsAll(state, payload) {
-            state.prefsAll = payload || [];
-            if (payload) {
-                state.currentPref = payload[state.currentIndex];
-            }
+        setDancerPrefsAll(state, payload) {
+            state.dancerPrefsAll = payload || [];
+        },
+        setChoreographerPrefsAll(state, payload) {
+            state.choreographerPrefsAll = payload || [];
         },
         setCurrentIndex(state, payload) {
             state.currentIndex = payload || 0;
@@ -34,26 +37,49 @@ export default {
         }
     },
     actions: {
+        clearData(context) {
+            context.commit('setDancerPrefsAll', []);
+            context.commit('setChoreographerPrefsAll', []);
+        },
         async loadAllData(context) {
             console.log('load all data');
-            await context.dispatch('loadData', {node: 'dancer_prefs', mutation: 'dancer_prefs/setPrefsAll'}, {root: true});
+            await context.dispatch('loadData', {node: 'dancer_prefs', mutation: 'prefs/setDancerPrefsAll'}, {root: true});
             await context.dispatch('loadData', {node: 'cast_list', mutation: 'cast_list/setCastList'}, {root: true});
-            await context.dispatch('loadData', {node: 'choreographer_prefs', mutation: 'choreographer_prefs/setPrefsAll'}, {root: true});
+            await context.dispatch('loadData', {node: 'choreographer_prefs', mutation: 'prefs/setChoreographerPrefsAll'}, {root: true});
         },
         inializeData(context) {
             console.log('initialize data');
-            const current_pref = context.getters.prefsAll[context.getters.currentIndex];
+            const current_path = router.currentRoute.value.path;
+            let current_pref = {};
+            if (current_path === '/prefs/choreographer') {
+                current_pref = context.getters.choreographerPrefsAll[0];
+            } else if (current_path === '/prefs/dancer') {
+                current_pref = context.getters.dancerPrefsAll[0];
+                context.dispatch('calculateStatuses', {currentPref: current_pref}).then((statuses) => {
+                    console.log(statuses);
+                    context.commit('setCurrentStatuses', statuses);
+                });
+            }
+
             context.commit('setCurrentPref', current_pref);
-            context.dispatch('calculateStatuses', {currentPref: current_pref}).then((statuses) => {
-                console.log(statuses);
-                context.commit('setCurrentStatuses', statuses);
-            });
+            context.commit('setCurrentIndex', 0);
         },
-        changeDancerPref(context, payload) {
+        changePref(context, payload) {
+            const current_path = router.currentRoute.value.path;
+            let prefs_all = [];
+            let field = '';
+            if (current_path === '/prefs/choreographer') {
+                prefs_all = context.getters.choreographerPrefsAll;
+                field = 'pieces';
+            } else if (current_path === '/prefs/dancer') {
+                prefs_all = context.getters.dancerPrefsAll;
+                field = 'dancers';
+            }
+
             let new_index = -1;
             if (payload.type === 'next') {
                 const current_index = +context.getters.currentIndex;
-                if (current_index < context.getters.prefsAll.length-1) {
+                if (current_index < prefs_all.length-1) {
                     new_index = current_index + 1;
                 }
             } else if (payload.type === 'previous') {
@@ -62,23 +88,26 @@ export default {
                     new_index = current_index - 1;
                 }
             } else if (payload.type === 'jump') {
-                new_index = context.getters.dancers.indexOf(payload.to);
+                new_index = context.getters[field].indexOf(payload.to);
             }
 
             if (new_index !== -1) {
-                const new_pref = context.getters.prefsAll[new_index];
+                const new_pref = prefs_all[new_index];
                 context.commit('setCurrentIndex', new_index);
                 context.commit('setCurrentPref', new_pref);
-                context.dispatch('calculateStatuses', {currentPref: new_pref}).then((statuses) => {
-                    context.commit('setCurrentStatuses', statuses);
-                });
+                if (current_path === '/prefs/dancer') {
+                    context.dispatch('calculateStatuses', {currentPref: new_pref}).then((statuses) => {
+                        context.commit('setCurrentStatuses', statuses);
+                    });
+                }
             }
         },
         calculateStatuses(context, payload) {
             console.log('calculate statuses');
             console.log(payload);
-            const choreographer_prefs = context.rootGetters['choreographer_prefs/prefsAll'];
+            const choreographer_prefs = context.getters.choreographerPrefsAll;
             const cast_list = context.rootGetters['cast_list/castList'];
+            console.log(cast_list);
 
             let statuses = {};
             payload.currentPref.prefs.forEach((piece) => {
@@ -117,10 +146,16 @@ export default {
     },
     getters: {
         dancers(state) {
-            return state.prefsAll.map(pref => pref.name)
+            return state.dancerPrefsAll.map(pref => pref.name)
         },
-        prefsAll(state) {
-            return state.prefsAll;
+        pieces(state) {
+            return state.choreographerPrefsAll.map(pref => pref.name)
+        },
+        dancerPrefsAll(state) {
+            return state.dancerPrefsAll;
+        },
+        choreographerPrefsAll(state) {
+            return state.choreographerPrefsAll;
         },
         currentPref(state) {
             return state.currentPref;

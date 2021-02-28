@@ -27,10 +27,10 @@
         name: "ChoreographerPrefInfo",
         components: {BaseButton},
         computed: {
-            ...mapGetters('choreographer_prefs', ['showDropped', 'currentPref'])
+            ...mapGetters('prefs', ['showDropped', 'currentPref'])
         },
         methods: {
-            ...mapActions('choreographer_prefs', ['toggleShowDropped'])
+            ...mapActions('prefs', ['toggleShowDropped'])
         }
     }
 </script>

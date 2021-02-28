@@ -37,10 +37,10 @@
         name: "DancerPrefInfo",
         components: {BaseButton},
         computed: {
-            ...mapGetters('dancer_prefs', ['showDropped', 'currentPref', 'view'])
+            ...mapGetters('prefs', ['showDropped', 'currentPref', 'view'])
         },
         methods: {
-            ...mapActions('dancer_prefs', ['toggleShowDropped', 'toggleView'])
+            ...mapActions('prefs', ['toggleShowDropped', 'toggleView'])
         }
     }
 </script>

@@ -19,7 +19,7 @@
         components: {BaseBadge},
         props: ['index', 'piece', 'currentStatus'],
         computed: {
-            ...mapGetters('dancer_prefs', ['showDropped']),
+            ...mapGetters('prefs', ['showDropped']),
             castStatusClass() {
                 if (this.currentStatus) {
                     if (this.currentStatus.status === 'cast') {

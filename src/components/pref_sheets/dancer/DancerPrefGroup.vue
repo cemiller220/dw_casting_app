@@ -24,7 +24,7 @@
         name: "DancerPrefGroup",
         components: {DancerPrefItem},
         computed: {
-            ...mapGetters('dancer_prefs', ['currentPref', 'currentStatuses'])
+            ...mapGetters('prefs', ['currentPref', 'currentStatuses'])
         }
     }
 </script>

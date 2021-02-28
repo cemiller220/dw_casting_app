@@ -30,15 +30,18 @@
         name: "DancerPrefs",
         components: {CalendarView, DancerPrefGroup, DancerPrefInfo, PrefHeader, BaseCard},
         computed: {
-            ...mapGetters('dancer_prefs', ['view'])
+            ...mapGetters('prefs', ['view'])
         },
         methods: {
-            ...mapActions('dancer_prefs', ['loadAllData', 'inializeData'])
+            ...mapActions('prefs', ['loadAllData', 'inializeData', 'clearData'])
         },
         created() {
-            this.loadAllData().then(() => {
-                this.inializeData();
-            });
+            this.clearData().then(() => {
+                this.loadAllData().then(() => {
+                    this.inializeData();
+                });
+            })
+
         }
     }
 </script>

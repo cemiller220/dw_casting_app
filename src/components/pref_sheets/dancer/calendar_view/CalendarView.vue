@@ -55,7 +55,7 @@
             }
         },
         computed: {
-            ...mapGetters('dancer_prefs', ['currentPref', 'currentStatuses'])
+            ...mapGetters('prefs', ['currentPref', 'currentStatuses'])
         },
         methods: {
             pieceIndex(piece) {

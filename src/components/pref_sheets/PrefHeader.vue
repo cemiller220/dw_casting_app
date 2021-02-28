@@ -1,17 +1,17 @@
 <template>
     <div class="row justify-content-between">
         <div class="col-auto">
-            <base-button @click="changePref({type: 'previous'})">&larr; Previous {{ jumpField }}</base-button>
+            <base-button @click="changePrefClick({type: 'previous'})">&larr; Previous {{ jumpField }}</base-button>
         </div>
         <div class="col-auto">
             <label for="pieceOptions" class="form-label">Jump to {{ jumpField }}</label>
-            <input class="form-control" list="pieceOptions" v-model="jump_name" @input="changePref({type: 'jump', to: jump_name})"/>
+            <input class="form-control" list="pieceOptions" v-model="jump_name" @input="changePrefClick({type: 'jump', to: jump_name})"/>
             <datalist id="pieceOptions">
                 <option v-for="option in options" :key="'filter-' + option" :value="option">{{ option }}</option>
             </datalist>
         </div>
         <div class="col-auto">
-            <base-button @click="changePref({type: 'next'})">Next {{ jumpField }} &rarr;</base-button>
+            <base-button @click="changePrefClick({type: 'next'})">Next {{ jumpField }} &rarr;</base-button>
         </div>
     </div>
 </template>
@@ -29,8 +29,7 @@
             }
         },
         computed: {
-            ...mapGetters('choreographer_prefs', ['pieces']),
-            ...mapGetters('dancer_prefs', ['dancers']),
+            ...mapGetters('prefs', ['dancers', 'pieces']),
             options() {
                 if (this.type === 'choreographer') {
                     return this.pieces;
@@ -49,15 +48,10 @@
             }
         },
         methods: {
-            ...mapActions('choreographer_prefs', ['changeChoreographerPref']),
-            ...mapActions('dancer_prefs', ['changeDancerPref']),
-            changePref(payload) {
+            ...mapActions('prefs', ['changePref']),
+            changePrefClick(payload) {
                 this.jump_name = '';
-                if (this.type === 'choreographer') {
-                    this.changeChoreographerPref(payload);
-                } else if (this.type === 'dancer') {
-                    this.changeDancerPref(payload);
-                }
+                this.changePref(payload);
             }
         }
     }
