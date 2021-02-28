@@ -52,7 +52,7 @@
             ...mapActions('choreographer_prefs', ['changeChoreographerPref']),
             ...mapActions('dancer_prefs', ['changeDancerPref']),
             changePref(payload) {
-                console.log('changePref');
+                this.jump_name = '';
                 if (this.type === 'choreographer') {
                     this.changeChoreographerPref(payload);
                 } else if (this.type === 'dancer') {

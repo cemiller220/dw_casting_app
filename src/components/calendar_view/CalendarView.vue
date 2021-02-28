@@ -1,5 +1,5 @@
 <template>
-    <base-card>
+    <base-card v-if="currentPref && currentStatuses">
         <div class="row justify-content-center">
             <div class="col" v-for="(_, day) in rehearsal_schedule.first" :key="day + 'title'">
                 <base-card class="text-center">
@@ -10,12 +10,13 @@
         </div>
         <div class="row justify-content-center" v-for="(days, time_slot) in rehearsal_schedule" :key="time_slot" >
             <div class="col" v-for="(pieces, day) in days" :key="day + '-' + time_slot" style="padding: 0 10px 20px 10px;">
-                <base-card class="h-100">
-                    <ul class="list-group list my--3" v-for="piece in pieces" :key="piece">
-                        <li class="list-group-item">
-                            {{ piece }}
-                        </li>
-                    </ul>
+                <base-card class="h-100 ">
+                    <div class="item-wrapper" v-for="piece in pieces" :key="piece" :piece="piece" v-show="pieceIndex(piece) !== -1">
+                        <dancer-pref-item :index="pieceIndex(piece)"
+                                          :piece="piece"
+                                          :currentStatus="currentStatuses[piece]">
+                        </dancer-pref-item>
+                    </div>
                 </base-card>
             </div>
         </div>
@@ -24,10 +25,12 @@
 
 <script>
     import BaseCard from "../UI/BaseCard";
+    import DancerPrefItem from "../pref_sheets/dancer/DancerPrefItem";
+    import {mapGetters} from "vuex";
 
     export default {
         name: "CalendarView",
-        components: {BaseCard},
+        components: {DancerPrefItem, BaseCard},
         data() {
             return {
                 rehearsal_schedule: {'first': {'Sunday': ['Domino'],
@@ -50,10 +53,24 @@
                     }
                 }
             }
+        },
+        computed: {
+            ...mapGetters('dancer_prefs', ['currentPref', 'currentStatuses'])
+        },
+        methods: {
+            pieceIndex(piece) {
+                if (this.currentPref.prefs) {
+                    return this.currentPref.prefs.indexOf(piece);
+                }
+                return -1;
+            }
         }
     }
 </script>
 
 <style scoped>
-
+    .item-wrapper {
+        padding: 5px 0;
+        border-radius: 5px;
+    }
 </style>

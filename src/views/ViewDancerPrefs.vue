@@ -7,7 +7,8 @@
             <dancer-pref-info>
             </dancer-pref-info>
         </base-card>
-        <div class="row justify-content-center">
+        <calendar-view v-if="view === 'calendar'"></calendar-view>
+        <div class="row justify-content-center" v-if="view === 'list'">
             <div class="col-4">
                 <base-card>
                     <dancer-pref-group>
@@ -23,10 +24,14 @@
     import PrefHeader from "../components/pref_sheets/PrefHeader";
     import DancerPrefInfo from "../components/pref_sheets/dancer/DancerPrefInfo";
     import DancerPrefGroup from "../components/pref_sheets/dancer/DancerPrefGroup";
-    import {mapActions} from "vuex";
+    import {mapActions, mapGetters} from "vuex";
+    import CalendarView from "../components/calendar_view/CalendarView";
     export default {
         name: "DancerPrefs",
-        components: {DancerPrefGroup, DancerPrefInfo, PrefHeader, BaseCard},
+        components: {CalendarView, DancerPrefGroup, DancerPrefInfo, PrefHeader, BaseCard},
+        computed: {
+            ...mapGetters('dancer_prefs', ['view'])
+        },
         methods: {
             ...mapActions('dancer_prefs', ['loadAllData', 'inializeData'])
         },

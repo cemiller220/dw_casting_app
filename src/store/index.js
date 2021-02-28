@@ -125,7 +125,7 @@ export default createStore({
       } else if (payload.current_path === '/prefs/choreographer') {
         context.dispatch('loadData', {node: 'choreographer_prefs', mutation: 'choreographer_prefs/setPrefsAll'});
         context.dispatch('loadData', {node: 'cast_list', mutation: 'cast_list/setCastList'});
-      } else if (payload.current_path === '/prefs/dancer') {
+      } else if (payload.current_path === '/prefs/dancer' || payload.current_path === '/run_casting') {
         context.dispatch('dancer_prefs/loadAllData').then(() => {
           context.dispatch('dancer_prefs/inializeData')
         });

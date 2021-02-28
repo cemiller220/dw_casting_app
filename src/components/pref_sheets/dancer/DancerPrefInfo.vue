@@ -17,24 +17,30 @@
             <h4>Notes: {{ currentPref.notes }}</h4>
         </div>
     </div>
-<!--    <div class="row justify-content-center">-->
-<!--        <div class="col-auto">-->
-<!--            <base-button @click="toggleShowDropped">-->
-<!--                {{ showDropped ? 'Hide' : 'Show' }} Dropped Dancers-->
-<!--            </base-button>-->
-<!--        </div>-->
-<!--    </div>-->
+    <div class="row justify-content-center">
+        <div class="col-auto">
+            <base-button @click="toggleShowDropped">
+                {{ showDropped ? 'Hide' : 'Show' }} Dropped Pieces
+            </base-button>
+            <base-button @click="toggleView">
+                Switch to {{ view === 'list' ? 'Calendar' : 'List' }} View
+            </base-button>
+        </div>
+    </div>
 </template>
 
 <script>
-    // import BaseButton from "../../UI/BaseButton";
-    import {mapGetters} from 'vuex';
+    import BaseButton from "../../UI/BaseButton";
+    import {mapActions, mapGetters} from 'vuex';
 
     export default {
         name: "DancerPrefInfo",
-        // components: {BaseButton},
+        components: {BaseButton},
         computed: {
-            ...mapGetters('dancer_prefs', ['currentPref'])
+            ...mapGetters('dancer_prefs', ['showDropped', 'currentPref', 'view'])
+        },
+        methods: {
+            ...mapActions('dancer_prefs', ['toggleShowDropped', 'toggleView'])
         }
     }
 </script>

@@ -2,17 +2,24 @@
     <li class="list-group-item" :class="castStatusClass" v-if="showPiece">
         <base-badge :title="index" color="blue" :clickable="false" class="float-start"></base-badge>
         {{ piece }}
-        <base-badge :title="currentStatus.rank" :color="statusBadgeColor" v-if="showStatusBadge" class="float-end"></base-badge>
+        <div class="row">
+            <div class="col text-center">
+        <base-badge :title="currentStatus.rank" :color="statusBadgeColor" v-if="showStatusBadge" ></base-badge>
+            </div>
+        </div>
     </li>
 </template>
 
 <script>
     import BaseBadge from "../../UI/BaseBadge";
+    import {mapGetters} from 'vuex';
+
     export default {
         name: "DancerPrefItem",
         components: {BaseBadge},
         props: ['index', 'piece', 'currentStatus'],
         computed: {
+            ...mapGetters('dancer_prefs', ['showDropped']),
             castStatusClass() {
                 if (this.currentStatus) {
                     if (this.currentStatus.status === 'cast') {
@@ -24,7 +31,7 @@
                 return '';
             },
             showPiece() {
-                return true;
+                return (this.castStatusClass === '' && this.showDropped) || (this.castStatusClass !== '')
             },
             statusBadgeColor() {
                 if (this.currentStatus) {

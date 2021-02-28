@@ -3,7 +3,7 @@
 </template>
 
 <script>
-    import CalendarView from "../components/run_casting/CalendarView";
+    import CalendarView from "../components/calendar_view/CalendarView";
     export default {
         name: "RunCasting",
         components: {CalendarView}

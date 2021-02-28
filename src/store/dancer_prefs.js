@@ -5,7 +5,9 @@ export default {
             prefsAll: [],
             currentIndex: 0,
             currentPref: {},
-            currentStatuses: {}
+            currentStatuses: {},
+            showDropped: true,
+            view: 'list'
         }
     },
     mutations: {
@@ -24,6 +26,12 @@ export default {
         setCurrentStatuses(state, payload) {
             state.currentStatuses = payload;
         },
+        setShowDropped(state, payload) {
+            state.showDropped = payload;
+        },
+        setView(state, payload) {
+            state.view = payload;
+        }
     },
     actions: {
         async loadAllData(context) {
@@ -95,6 +103,16 @@ export default {
             });
 
             return statuses;
+        },
+        toggleShowDropped(context) {
+            context.commit('setShowDropped', !context.getters.showDropped)
+        },
+        toggleView(context) {
+            if (context.getters.view === 'list') {
+                context.commit('setView', 'calendar')
+            } else {
+                context.commit('setView', 'list')
+            }
         }
     },
     getters: {
@@ -112,6 +130,12 @@ export default {
         },
         currentStatuses(state) {
             return state.currentStatuses;
+        },
+        showDropped(state) {
+            return state.showDropped;
+        },
+        view(state) {
+            return state.view;
         }
     }
 }
