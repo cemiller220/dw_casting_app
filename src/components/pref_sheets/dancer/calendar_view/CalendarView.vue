@@ -12,11 +12,12 @@
             <div class="col schedule-col" v-for="day in days_order" :key="day + '-' + time_slot">
                 <base-card class="h-100 ">
                     <div class="item-wrapper" v-for="piece in rehearsalSchedule[time_slot][day]" :key="piece" :piece="piece" v-show="pieceIndex(piece) !== -1">
-                        <dancer-pref-item :index="pieceIndex(piece)"
+                        <dancer-pref-item :index="pieceIndex(piece)+1"
                                           :piece="piece"
-                                          :currentStatus="currentStatuses[piece]">
+                                          :currentStatus="currentStatuses[piece]"
+                                          :keepDrop="keepDrop[piece]"
+                                          :type="type">
                         </dancer-pref-item>
-                        <casting-helpers v-if="type === 'cast'"></casting-helpers>
                     </div>
                 </base-card>
             </div>
@@ -28,11 +29,11 @@
     import BaseCard from "../../../UI/BaseCard";
     import DancerPrefItem from "../DancerPrefItem";
     import {mapGetters} from "vuex";
-    import CastingHelpers from "../casting_helpers/CastingHelpers";
+    // import CastingHelpers from "../casting_helpers/CastingHelpers";
 
     export default {
         name: "CalendarView",
-        components: {CastingHelpers, DancerPrefItem, BaseCard},
+        components: {DancerPrefItem, BaseCard},
         props: ['type'],
         data() {
             return {
@@ -41,7 +42,7 @@
             }
         },
         computed: {
-            ...mapGetters('prefs', ['currentPref', 'currentStatuses', 'rehearsalSchedule'])
+            ...mapGetters('prefs', ['currentPref', 'currentStatuses', 'rehearsalSchedule', 'keepDrop']),
         },
         methods: {
             pieceIndex(piece) {

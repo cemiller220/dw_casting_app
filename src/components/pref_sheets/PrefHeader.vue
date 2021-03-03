@@ -50,7 +50,7 @@
         methods: {
             ...mapActions('prefs', ['changePref']),
             changePrefClick(payload) {
-                this.jump_name = '';
+                // this.jump_name = '';
                 this.changePref(payload);
             }
         }

@@ -4,7 +4,7 @@
             <pref-header type="dancer"></pref-header>
         </base-card>
         <base-card>
-            <dancer-pref-info>
+            <dancer-pref-info :type="page">
             </dancer-pref-info>
         </base-card>
         <calendar-view v-if="view === 'calendar'" :type="page"></calendar-view>
@@ -16,6 +16,7 @@
                 </base-card>
             </div>
         </div>
+        <base-button @click="startCasting" v-if="page === 'cast'">Start Casting</base-button>
     </div>
 </template>
 
@@ -26,9 +27,10 @@
     import DancerPrefGroup from "../components/pref_sheets/dancer/DancerPrefGroup";
     import {mapActions, mapGetters} from "vuex";
     import CalendarView from "../components/pref_sheets/dancer/calendar_view/CalendarView";
+    import BaseButton from "../components/UI/BaseButton";
     export default {
         name: "DancerPrefs",
-        components: {CalendarView, DancerPrefGroup, DancerPrefInfo, PrefHeader, BaseCard},
+        components: {BaseButton, CalendarView, DancerPrefGroup, DancerPrefInfo, PrefHeader, BaseCard},
         computed: {
             ...mapGetters('prefs', ['view']),
             page() {
@@ -40,7 +42,7 @@
             }
         },
         methods: {
-            ...mapActions('prefs', ['loadAllData', 'inializeData', 'toggleView'])
+            ...mapActions('prefs', ['loadAllData', 'inializeData', 'toggleView', 'startCasting'])
         },
         created() {
             this.loadAllData().then(() => {

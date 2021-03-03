@@ -1,5 +1,7 @@
 <template>
-    <li class="list-group-item" :class="castStatusClass" v-if="showPiece">
+    <li class="list-group-item"
+        :class="[castStatusClass, keepDrop]"
+        v-if="showPiece">
         <base-badge :title="index" color="blue" :clickable="false" class="float-start"></base-badge>
         {{ piece }}
         <div class="row" v-if="view === 'calendar'">
@@ -8,9 +10,9 @@
             </div>
         </div>
         <base-badge :title="currentStatus.rank" :color="statusBadgeColor" v-else-if="showStatusBadge" class="float-end"></base-badge>
-        <div v-if="type === 'cast'">
+        <div v-if="type === 'cast' && showHelpers">
             <br/>
-            <casting-helpers ></casting-helpers>
+            <casting-helpers :keepDrop="keepDrop" :piece="piece"></casting-helpers>
         </div>
     </li>
 
@@ -24,7 +26,7 @@
     export default {
         name: "DancerPrefItem",
         components: {CastingHelpers, BaseBadge},
-        props: ['index', 'piece', 'currentStatus', 'type'],
+        props: ['index', 'piece', 'currentStatus', 'type', 'keepDrop'],
         computed: {
             ...mapGetters('prefs', ['showDropped', 'view']),
             castStatusClass() {
@@ -53,11 +55,20 @@
                     return this.currentStatus.preference !== 'not preffed'
                 }
                 return false;
+            },
+            showHelpers() {
+                return this.currentStatus && this.currentStatus.status !== 'dropped' && this.currentStatus.status !== ''
             }
         }
     }
 </script>
 
 <style scoped>
+    .keep {
+        border: 2px solid green;
+    }
 
+    .drop {
+        border: 2px solid red;
+    }
 </style>

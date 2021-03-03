@@ -10,6 +10,8 @@ export default {
             currentPref: {},
             currentStatuses: {},
             currentCast: {},
+            keepDrop: {},
+            prefsValid: {},
             rehearsalSchedule: null,
             showDropped: true,
             view: 'list'
@@ -33,6 +35,12 @@ export default {
         },
         setCurrentCast(state, payload) {
             state.currentCast = payload;
+        },
+        setKeepDrop(state, payload) {
+            state.keepDrop = payload;
+        },
+        setPrefsValid(state, payload) {
+            state.prefsValid = payload;
         },
         setRehearsalSchedule(state, payload) {
             state.rehearsalSchedule = payload || null;
@@ -62,16 +70,75 @@ export default {
                     console.log(cast);
                     context.commit('setCurrentCast', cast);
                 });
-            } else if (current_path === '/prefs/dancer' || current_path === '/run_casting') {
+            } else if (current_path === '/prefs/dancer') {
                 current_pref = context.getters.dancerPrefsAll[0];
-                context.dispatch('calculateStatuses', {currentPref: current_pref}).then((statuses) => {
-                    console.log(statuses);
-                    context.commit('setCurrentStatuses', statuses);
+                context.dispatch('calculateStatuses', {currentPref: current_pref})
+                    .then((statuses) => {
+                        console.log(statuses);
+                        context.commit('setCurrentStatuses', statuses);
+                    });
+            } else if (current_path === '/run_casting') {
+                current_pref = context.getters.dancerPrefsAll[0];
+                context.dispatch('calculateStatuses', {currentPref: current_pref})
+                    .then((statuses) => {
+                        console.log(statuses);
+                        context.commit('setCurrentStatuses', statuses);
+                        return statuses;
+                    }).then((statuses) => {
+                    context.dispatch('calculateKeepDrop', {current_pref, statuses}).then((keepDrop) => {
+                        context.commit('setKeepDrop', keepDrop);
+                        return {current_pref, statuses, keepDrop}
+                    }).then((payload) => {
+                        context.dispatch('validateCasting', payload).then((valid) => {
+                            console.log(valid);
+                            context.commit('setPrefsValid', valid);
+                        })
+                    });
                 });
             }
 
             context.commit('setCurrentPref', current_pref);
             context.commit('setCurrentIndex', 0);
+        },
+        startCasting(context) {
+            // set choreographer prefs as cast list
+            let cast_list = [];
+            const dancer_prefs = context.getters.dancerPrefsAll.reduce((obj, item) => {
+                obj[item.name] = item.prefs;
+                return obj
+            }, {});
+            context.getters.choreographerPrefsAll.forEach((pref) => {
+                let cast = [];
+                let extra_cast = 0;
+                pref.prefs.favorites.forEach((dancer) => {
+                    if (dancer_prefs[dancer].indexOf(pref.name) !== -1) {
+                        cast.push({name: dancer, status: 'cast'})
+                    } else {
+                        extra_cast++;
+                    }
+                });
+                pref.prefs.alternates.forEach((dancer) => {
+                    if (dancer_prefs[dancer].indexOf(pref.name) !== -1) {
+                        if (extra_cast > 0) {
+                            cast.push({name: dancer, status: 'cast'});
+                            extra_cast--;
+                        } else {
+                            cast.push({name: dancer, status: 'waitlist'})
+                        }
+                    }
+                });
+                cast_list.push({
+                    name: pref.name,
+                    choreographer: pref.choreographer,
+                    time: pref.time,
+                    cast: cast
+                })
+            });
+
+            context.commit('cast_list/setCastList', cast_list, {root: true});
+            context.dispatch('uploadData', {node: 'cast_list', data: cast_list}, {root: true}).then(() => {
+                context.dispatch('inializeData');
+            });
         },
         changePref(context, payload) {
             const current_path = router.currentRoute.value.path;
@@ -104,9 +171,23 @@ export default {
                 const new_pref = prefs_all[new_index];
                 context.commit('setCurrentIndex', new_index);
                 context.commit('setCurrentPref', new_pref);
-                if (current_path === '/prefs/dancer' || current_path === '/run_casting') {
+                if (current_path === '/prefs/dancer') {
                     context.dispatch('calculateStatuses', {currentPref: new_pref}).then((statuses) => {
                         context.commit('setCurrentStatuses', statuses);
+                    });
+                } else if (current_path === '/run_casting') {
+                    context.dispatch('calculateStatuses', {currentPref: new_pref}).then((statuses) => {
+                        context.commit('setCurrentStatuses', statuses);
+                        return statuses;
+                    }).then((statuses) => {
+                        context.dispatch('calculateKeepDrop', {current_pref: new_pref, statuses}).then((keepDrop) => {
+                            context.commit('setKeepDrop', keepDrop);
+                            return {current_pref: new_pref, statuses, keepDrop}
+                        }).then((payload) => {
+                            context.dispatch('validateCasting', payload).then((valid) => {
+                                context.commit('setPrefsValid', valid);
+                            })
+                        })
                     });
                 } else if (current_path === '/prefs/choreographer') {
                     context.dispatch('calculateCurrentCast', {currentPref: new_pref}).then((cast) => {
@@ -154,6 +235,102 @@ export default {
 
             return cast_reformat;
         },
+        calculateKeepDrop(context, payload) {
+            console.log(payload);
+            let keep_drop = {};
+            Object.keys(payload.statuses).forEach((piece) => {
+                if (payload.statuses[piece].status === 'cast' || payload.statuses[piece].status === 'waitlist') {
+                    keep_drop[piece] = 'keep';
+                }
+            });
+            return keep_drop;
+        },
+        updateKeepDrop(context, payload) {
+            let keep_drop = context.getters.keepDrop;
+            keep_drop[payload.piece] = payload.value;
+            context.commit('setKeepDrop', keep_drop);
+            context.dispatch('validateCasting', {
+                current_pref: context.getters.currentPref,
+                statuses: context.getters.currentStatuses,
+                keepDrop: keep_drop
+            }).then((valid) => {
+                context.commit('setPrefsValid', valid);
+            })
+        },
+        validateCasting(context, payload) {
+            console.log('validate');
+            let days = {};
+            let times = {};
+            context.getters.choreographerPrefsAll.forEach((pref) => {
+                days[pref.name] = pref.time.day;
+                times[pref.name] = pref.time.time;
+            });
+            let all_cast_days = [];
+            let day_times = [];
+            let num_cast = 0;
+            let same_time = false;
+            console.log(payload.keepDrop);
+            Object.keys(payload.keepDrop).forEach((piece) => {
+                if (payload.keepDrop[piece] === 'keep' && payload.statuses[piece].status === 'cast') {
+                    num_cast++;
+                    if (all_cast_days.indexOf(days[piece]) === -1) {
+                        all_cast_days.push(days[piece]);
+                    }
+                    if (day_times.indexOf(days[piece] + times[piece]) !== -1) {
+                        same_time = true;
+                    } else {
+                        day_times.push(days[piece] + times[piece])
+                    }
+
+                }
+            });
+
+            let max_days = 'less';
+            let done = false;
+            if (payload.current_pref.max_days < all_cast_days.length) {
+                max_days = 'more'
+            } else if (payload.current_pref.max_days === all_cast_days.length) {
+                max_days = 'match';
+            }
+
+            let max_dances = 'less';
+            if (payload.current_pref.max_dances < num_cast) {
+                max_dances = 'more'
+            } else if (payload.current_pref.max_dances === num_cast) {
+                max_dances = 'match'
+            }
+
+            if (max_days !== 'more' && max_dances !== 'more' && Object.values(payload.statuses).map(piece => piece.status).indexOf('waitlist') === -1) {
+                done = true;
+            }
+
+            return {max_days: max_days, max_dances: max_dances, same_time: same_time, done: done};
+        },
+        saveChanges(context) {
+            const current_pref = context.getters.currentPref;
+            const keep_drop = context.getters.keepDrop;
+            const cast_list = context.rootGetters['cast_list/castList'];
+            Object.keys(keep_drop).forEach((piece) => {
+                if (keep_drop[piece] === 'drop') {
+                    // remove this dancer
+                    let piece_ind = cast_list.map(piece => piece.name).indexOf(piece);
+                    let dancer_ind = cast_list[piece_ind].cast.map(dancer => dancer.name).indexOf(current_pref.name);
+                    let dancer_status = cast_list[piece_ind].cast[dancer_ind].status;
+                    cast_list[piece_ind].cast.splice(dancer_ind, 1);
+
+                    // if dancer was cast, add next dancer from waitlist
+                    if (dancer_status === 'cast') {
+                        let waitlist_ind = cast_list[piece_ind].cast.map(dancer => dancer.status).indexOf('waitlist');
+                        cast_list[piece_ind].cast[waitlist_ind].status = 'cast';
+                    }
+                }
+            });
+
+            // save new cast list
+            context.dispatch('uploadData', {node: 'cast_list', data: cast_list}, {root: true});
+            // go to next dancer
+            context.dispatch('changePref', {type: 'next'})
+        },
         toggleShowDropped(context) {
             context.commit('setShowDropped', !context.getters.showDropped)
         },
@@ -190,6 +367,12 @@ export default {
         currentCast(state) {
             return state.currentCast;
         },
+        keepDrop(state) {
+            return state.keepDrop;
+        },
+        prefsValid(state) {
+            return state.prefsValid;
+        },
         rehearsalSchedule(state) {
             return state.rehearsalSchedule;
         },
@@ -201,3 +384,7 @@ export default {
         }
     }
 }
+
+// todo what if choreographer preffed the dancer, but the dancer didn't pref the piece??
+// todo validate 2 pieces at same time
+// add validation for matching vs lower than max

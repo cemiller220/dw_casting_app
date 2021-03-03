@@ -8,8 +8,9 @@
                 <ul class="list-group list my--3">
                     <dancer-pref-item v-for="(piece, index) in currentPref.prefs" :key="piece"
                                       :piece="piece"
-                                      :index="index"
+                                      :index="index+1"
                                       :currentStatus="currentStatuses[piece]"
+                                      :keepDrop="keepDrop[piece]"
                                       :type="type">
                     </dancer-pref-item>
                 </ul>
@@ -27,7 +28,7 @@
         components: {DancerPrefItem},
         props: ['type'],
         computed: {
-            ...mapGetters('prefs', ['currentPref', 'currentStatuses'])
+            ...mapGetters('prefs', ['currentPref', 'currentStatuses', 'keepDrop'])
         }
     }
 </script>
