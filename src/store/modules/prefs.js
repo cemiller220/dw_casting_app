@@ -271,9 +271,35 @@ export default {
                 }
 
             } else {
-                // keep all
+                // default
+                ['first', 'second', 'third'].forEach((time_slot) => {
+                    ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'].forEach((day) => {
+                        let pieces = context.getters.rehearsalSchedule[time_slot][day];
+                        if (pieces.length !== 1) {
+                            if (payload.statuses[pieces[0]] && payload.statuses[pieces[1]]) {
+                                let status0 = payload.statuses[pieces[0]].status;
+                                let status1 = payload.statuses[pieces[1]].status;
+                                let rank0 = payload.current_pref.prefs.indexOf(pieces[0]);
+                                let rank1 = payload.current_pref.prefs.indexOf(pieces[1]);
+                                if (rank0 < rank1) {
+                                    // if rank of pieces[0] is higher than rank of pieces[1]
+                                    // drop pieces[1] if pieces[0] is cast
+                                    if (status0 === 'cast' && ['cast', 'waitlist'].indexOf(status1) !== -1) {
+                                        keep_drop[pieces[1]] = 'drop';
+                                    }
+                                } else {
+                                    // if rank of pieces[1] is higher than rank of pieces[0]
+                                    // drop pieces[0] if pieces[1] is cast
+                                    if (status1 === 'cast' && ['cast', 'waitlist'].indexOf(status0) !== -1) {
+                                        keep_drop[pieces[0]] = 'drop';
+                                    }
+                                }
+                            }
+                        }
+                    })
+                });
                 Object.keys(payload.statuses).forEach((piece) => {
-                    if (payload.statuses[piece].status === 'cast' || payload.statuses[piece].status === 'waitlist') {
+                    if (!keep_drop[piece] && (payload.statuses[piece].status === 'cast' || payload.statuses[piece].status === 'waitlist')) {
                         keep_drop[piece] = 'keep';
                     }
                 });
@@ -458,9 +484,9 @@ export default {
     }
 }
 
-// todo what if choreographer preffed the dancer, but the dancer didn't pref the piece??
-// todo validate 2 pieces at same time
-// add validation for matching vs lower than max
+// todo: check for 2 at same time when adding dancer off waitlist
+// todo: display other background changes on screen (i.e. after dropping dancer, display who was added
+// todo: add preview changes option
 
 
 
