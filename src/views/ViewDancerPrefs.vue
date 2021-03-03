@@ -17,6 +17,7 @@
             </div>
         </div>
         <base-button @click="startCasting" v-if="page === 'cast'">Start Casting</base-button>
+        <base-button @click="dropAllSameTime" v-if="page === 'cast'">dropAllSameTime</base-button>
     </div>
 </template>
 
@@ -42,7 +43,7 @@
             }
         },
         methods: {
-            ...mapActions('prefs', ['loadAllData', 'inializeData', 'toggleView', 'startCasting'])
+            ...mapActions('prefs', ['loadAllData', 'inializeData', 'toggleView', 'startCasting', 'dropAllSameTime'])
         },
         created() {
             this.loadAllData().then(() => {

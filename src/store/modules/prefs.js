@@ -238,11 +238,47 @@ export default {
         calculateKeepDrop(context, payload) {
             console.log(payload);
             let keep_drop = {};
-            Object.keys(payload.statuses).forEach((piece) => {
-                if (payload.statuses[piece].status === 'cast' || payload.statuses[piece].status === 'waitlist') {
-                    keep_drop[piece] = 'keep';
+            if (payload.current_pref.max_dances === 1) {
+                // if dancer only wants 1 dance, find top dance they've been cast in and drop everything below it
+                console.log('single dance');
+                let max_cast_index = -1;
+                for (let ind=0; ind<payload.current_pref.prefs.length; ind++) {
+                    // find top ind
+                    if (payload.statuses[payload.current_pref.prefs[ind]].status === 'cast') {
+                        max_cast_index = ind;
+                        break
+                    }
                 }
-            });
+                console.log('max cast index: ' + max_cast_index);
+                if (max_cast_index !== -1) {
+                    // drop everything below
+                    Object.keys(payload.statuses).forEach((piece) => {
+                        if (payload.statuses[piece].status === 'cast' || payload.statuses[piece].status === 'waitlist') {
+                            if (payload.current_pref.prefs.indexOf(piece) > max_cast_index) {
+                                keep_drop[piece] = 'drop'
+                            } else {
+                                keep_drop[piece] = 'keep';
+                            }
+                        }
+                    });
+                } else {
+                    // dancer hasn't been cast in anything yet, keep all
+                    Object.keys(payload.statuses).forEach((piece) => {
+                        if (payload.statuses[piece].status === 'cast' || payload.statuses[piece].status === 'waitlist') {
+                            keep_drop[piece] = 'keep';
+                        }
+                    });
+                }
+
+            } else {
+                // keep all
+                Object.keys(payload.statuses).forEach((piece) => {
+                    if (payload.statuses[piece].status === 'cast' || payload.statuses[piece].status === 'waitlist') {
+                        keep_drop[piece] = 'keep';
+                    }
+                });
+            }
+
             return keep_drop;
         },
         updateKeepDrop(context, payload) {
@@ -306,30 +342,67 @@ export default {
 
             return {max_days: max_days, max_dances: max_dances, same_time: same_time, done: done};
         },
+        dropOne(context, payload) {
+            let cast_list = context.rootGetters['cast_list/castList'];
+            // remove this dancer
+            let piece_ind = cast_list.map(piece => piece.name).indexOf(payload.piece);
+            let dancer_ind = cast_list[piece_ind].cast.map(dancer => dancer.name).indexOf(payload.dancerName);
+            let dancer_status = cast_list[piece_ind].cast[dancer_ind].status;
+            cast_list[piece_ind].cast.splice(dancer_ind, 1);
+
+            // if dancer was cast, add next dancer from waitlist
+            if (dancer_status === 'cast') {
+                let waitlist_ind = cast_list[piece_ind].cast.map(dancer => dancer.status).indexOf('waitlist');
+                cast_list[piece_ind].cast[waitlist_ind].status = 'cast';
+            }
+
+            context.commit('cast_list/setCastList', cast_list, {root: true});
+        },
         saveChanges(context) {
             const current_pref = context.getters.currentPref;
             const keep_drop = context.getters.keepDrop;
-            const cast_list = context.rootGetters['cast_list/castList'];
             Object.keys(keep_drop).forEach((piece) => {
                 if (keep_drop[piece] === 'drop') {
-                    // remove this dancer
-                    let piece_ind = cast_list.map(piece => piece.name).indexOf(piece);
-                    let dancer_ind = cast_list[piece_ind].cast.map(dancer => dancer.name).indexOf(current_pref.name);
-                    let dancer_status = cast_list[piece_ind].cast[dancer_ind].status;
-                    cast_list[piece_ind].cast.splice(dancer_ind, 1);
-
-                    // if dancer was cast, add next dancer from waitlist
-                    if (dancer_status === 'cast') {
-                        let waitlist_ind = cast_list[piece_ind].cast.map(dancer => dancer.status).indexOf('waitlist');
-                        cast_list[piece_ind].cast[waitlist_ind].status = 'cast';
-                    }
+                    context.dispatch('dropOne', {dancerName: current_pref.name, piece: piece})
                 }
             });
 
             // save new cast list
+            const cast_list = context.rootGetters['cast_list/castList'];
             context.dispatch('uploadData', {node: 'cast_list', data: cast_list}, {root: true});
             // go to next dancer
             context.dispatch('changePref', {type: 'next'})
+        },
+        dropAllSameTime(context) {
+            let cast_list = context.rootGetters['cast_list/castList'];
+            let prefs_all = context.getters.dancerPrefsAll;
+            ['first', 'second', 'third'].forEach((time_slot) => {
+                ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'].forEach((day) => {
+                    let pieces = context.getters.rehearsalSchedule[time_slot][day];
+                    if (pieces.length !== 1) {
+                        let casts = cast_list.filter(piece => pieces.indexOf(piece.name) !== -1);
+                        casts[0].cast.filter(dancer1 => dancer1.status === 'cast').forEach((dancer) => {
+                            if (casts[1].cast.filter(dancer2 => dancer2.status === 'cast').map(dancer2 => dancer2.name).indexOf(dancer.name) !== -1) {
+                                // if dancer in both casts
+                                console.log(dancer.name);
+                                let dancer_pref = prefs_all[prefs_all.map(pref => pref.name).indexOf(dancer.name)].prefs;
+                                if (dancer_pref.indexOf(pieces[0]) > dancer_pref.indexOf(pieces[1])) {
+                                    // drop pieces[0]
+                                    // console.log(`Drop ${dancer.name} from ${pieces[0]}`)
+                                    context.dispatch('dropOne', {dancerName: dancer.name, piece: pieces[0]})
+                                } else {
+                                    // drop pieces[1]
+                                    // console.log(`Drop ${dancer.name} from ${pieces[1]}`)
+                                    context.dispatch('dropOne', {dancerName: dancer.name, piece: pieces[1]})
+                                }
+                            }
+                        })
+                    }
+                })
+            });
+
+            context.dispatch('uploadData', {node: 'cast_list', data: context.rootGetters['cast_list/castList']}, {root: true});
+
         },
         toggleShowDropped(context) {
             context.commit('setShowDropped', !context.getters.showDropped)
@@ -388,3 +461,6 @@ export default {
 // todo what if choreographer preffed the dancer, but the dancer didn't pref the piece??
 // todo validate 2 pieces at same time
 // add validation for matching vs lower than max
+
+
+
