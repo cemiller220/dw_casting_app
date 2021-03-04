@@ -3,9 +3,21 @@
         <base-card>
             <pref-header type="dancer"></pref-header>
         </base-card>
-        <base-card>
-            <dancer-pref-info :type="page">
-            </dancer-pref-info>
+        <div class="row align-items-center" v-if="page === 'cast'">
+            <div class="col-8">
+                <base-card class="h-95">
+                    <dancer-pref-info :type="page">
+                    </dancer-pref-info>
+                </base-card>
+            </div>
+            <div class="col-4 ">
+                <base-card class="h-95">
+                    <casting-changes></casting-changes>
+                </base-card>
+            </div>
+        </div>
+        <base-card v-else>
+            <dancer-pref-info :type="page"></dancer-pref-info>
         </base-card>
         <calendar-view v-if="view === 'calendar'" :type="page"></calendar-view>
         <div class="row justify-content-center" v-if="view === 'list'">
@@ -29,9 +41,10 @@
     import {mapActions, mapGetters} from "vuex";
     import CalendarView from "../components/pref_sheets/dancer/calendar_view/CalendarView";
     import BaseButton from "../components/UI/BaseButton";
+    import CastingChanges from "../components/pref_sheets/dancer/casting_helpers/CastingChanges";
     export default {
         name: "DancerPrefs",
-        components: {BaseButton, CalendarView, DancerPrefGroup, DancerPrefInfo, PrefHeader, BaseCard},
+        components: {CastingChanges, BaseButton, CalendarView, DancerPrefGroup, DancerPrefInfo, PrefHeader, BaseCard},
         computed: {
             ...mapGetters('prefs', ['view']),
             page() {
@@ -57,5 +70,10 @@
 </script>
 
 <style scoped>
+.h-95 {
+    height: 93%;
+    max-height: 250px;
+    overflow-y: auto;
 
+}
 </style>

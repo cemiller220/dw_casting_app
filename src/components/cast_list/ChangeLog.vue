@@ -10,7 +10,8 @@
             <change-log-item v-for="change in change_date.changes"
                              :key="change.name + change.type + change.piece"
                              :change-details="change"
-                             :date="change_date.date">
+                             :date="change_date.date"
+                             :undo="true">
             </change-log-item>
             <hr>
         </div>

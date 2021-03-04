@@ -4,7 +4,7 @@
         <strong>{{ changeDetails.name }}</strong>
         {{ toFrom }}
         <strong>{{ changeDetails.piece }}</strong>
-        <div class="row justify-content-end">
+        <div class="row justify-content-end" v-if="undo">
             <div class="col-auto">
                 <base-badge title="Undo" :clickable="true" @click="undoCurrentChange"></base-badge>
             </div>
@@ -17,7 +17,7 @@
     import { mapActions } from 'vuex';
     export default {
         name: "ChangeLogItem",
-        props: ['changeDetails', 'date'],
+        props: ['changeDetails', 'date', 'undo'],
         components: {BaseBadge},
         computed: {
             typeStr() {

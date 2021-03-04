@@ -12,6 +12,10 @@ export default {
             currentCast: {},
             keepDrop: {},
             prefsValid: {},
+            lastChanges: [{name: 'name1', piece: 'piece1', type: 'add'},
+                {name: 'name2', piece: 'piece2', type: 'drop'},
+                {name: 'name3', piece: 'piece3 with a really long name', type: 'drop'}
+                ],
             rehearsalSchedule: null,
             showDropped: true,
             view: 'list'
@@ -41,6 +45,15 @@ export default {
         },
         setPrefsValid(state, payload) {
             state.prefsValid = payload;
+        },
+        setLastChanges(state, payload) {
+            if (payload.type === 'replace') {
+                state.lastChanges = payload.changes;
+            } else {
+                payload.changes.forEach((change) => {
+                    state.lastChanges.unshift(change);
+                });
+            }
         },
         setRehearsalSchedule(state, payload) {
             state.rehearsalSchedule = payload || null;
@@ -370,23 +383,30 @@ export default {
         },
         dropOne(context, payload) {
             let cast_list = context.rootGetters['cast_list/castList'];
+            let changes = [];
+
             // remove this dancer
             let piece_ind = cast_list.map(piece => piece.name).indexOf(payload.piece);
             let dancer_ind = cast_list[piece_ind].cast.map(dancer => dancer.name).indexOf(payload.dancerName);
             let dancer_status = cast_list[piece_ind].cast[dancer_ind].status;
             cast_list[piece_ind].cast.splice(dancer_ind, 1);
+            changes.push({name: payload.dancerName, piece: payload.piece, type: 'drop'});
 
             // if dancer was cast, add next dancer from waitlist
             if (dancer_status === 'cast') {
                 let waitlist_ind = cast_list[piece_ind].cast.map(dancer => dancer.status).indexOf('waitlist');
                 cast_list[piece_ind].cast[waitlist_ind].status = 'cast';
+                changes.push({name: cast_list[piece_ind].cast[waitlist_ind].name, piece: payload.piece, type: 'add'});
             }
 
+            context.commit('setLastChanges', {changes: changes, type: 'add'});
             context.commit('cast_list/setCastList', cast_list, {root: true});
         },
         saveChanges(context) {
             const current_pref = context.getters.currentPref;
             const keep_drop = context.getters.keepDrop;
+            // context.commit('setLastChanges', {changes: [], type: 'replace'});
+
             Object.keys(keep_drop).forEach((piece) => {
                 if (keep_drop[piece] === 'drop') {
                     context.dispatch('dropOne', {dancerName: current_pref.name, piece: piece})
@@ -402,6 +422,8 @@ export default {
         dropAllSameTime(context) {
             let cast_list = context.rootGetters['cast_list/castList'];
             let prefs_all = context.getters.dancerPrefsAll;
+            // context.commit('setLastChanges', {changes: [], type: 'replace'});
+
             ['first', 'second', 'third'].forEach((time_slot) => {
                 ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'].forEach((day) => {
                     let pieces = context.getters.rehearsalSchedule[time_slot][day];
@@ -472,6 +494,9 @@ export default {
         prefsValid(state) {
             return state.prefsValid;
         },
+        lastChanges(state) {
+            return state.lastChanges;
+        },
         rehearsalSchedule(state) {
             return state.rehearsalSchedule;
         },
@@ -484,8 +509,6 @@ export default {
     }
 }
 
-// todo: check for 2 at same time when adding dancer off waitlist
-// todo: display other background changes on screen (i.e. after dropping dancer, display who was added
 // todo: add preview changes option
 
 
