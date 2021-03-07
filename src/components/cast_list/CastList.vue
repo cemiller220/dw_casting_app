@@ -5,8 +5,8 @@
         </div>
     </div>
     <div class="row justify-content-center" v-else>
-        <cast-list-group v-for="dance in filteredCastList" :key="dance.name" class="dance-card"
-                         :dance="dance">
+        <cast-list-group v-for="piece in filteredCastList" :key="piece.name" class="dance-card"
+                         :cast="piece.cast" :pieceName="piece.name">
         </cast-list-group>
     </div>
 </template>
@@ -19,7 +19,7 @@
         props: ['filteredCastList'],
         components: {
             CastListGroup
-        },
+        }
     }
 </script>
 

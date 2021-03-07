@@ -1,4 +1,5 @@
 <template>
+    <casting-status-all-dancers></casting-status-all-dancers>
     <div>
         <base-card>
             <pref-header type="dancer"></pref-header>
@@ -30,6 +31,7 @@
         </div>
         <base-button @click="startCasting" v-if="page === 'cast'">Start Casting</base-button>
         <base-button @click="dropAllSameTime" v-if="page === 'cast'">dropAllSameTime</base-button>
+        <base-button @click="calculateAllDancerValid" v-if="page === 'cast'">calculateAllDancerValid</base-button>
     </div>
 </template>
 
@@ -42,9 +44,10 @@
     import CalendarView from "../components/pref_sheets/dancer/calendar_view/CalendarView";
     import BaseButton from "../components/UI/BaseButton";
     import CastingChanges from "../components/pref_sheets/dancer/casting_helpers/CastingChanges";
+    import CastingStatusAllDancers from "../components/pref_sheets/dancer/casting_helpers/CastingStatusAllDancers";
     export default {
         name: "DancerPrefs",
-        components: {CastingChanges, BaseButton, CalendarView, DancerPrefGroup, DancerPrefInfo, PrefHeader, BaseCard},
+        components: {CastingStatusAllDancers, CastingChanges, BaseButton, CalendarView, DancerPrefGroup, DancerPrefInfo, PrefHeader, BaseCard},
         computed: {
             ...mapGetters('prefs', ['view']),
             page() {
@@ -56,7 +59,7 @@
             }
         },
         methods: {
-            ...mapActions('prefs', ['loadAllData', 'inializeData', 'toggleView', 'startCasting', 'dropAllSameTime'])
+            ...mapActions('prefs', ['loadAllData', 'inializeData', 'toggleView', 'startCasting', 'dropAllSameTime', 'calculateAllDancerValid'])
         },
         created() {
             this.loadAllData().then(() => {

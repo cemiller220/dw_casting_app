@@ -45,15 +45,10 @@
             }
         },
         computed: {
+            ...mapGetters(['rehearsal_schedule_list']),
             ...mapGetters('cast_list', ['castList', 'pieces', 'dancers', 'changeLog']),
-            currentCastList() {
-                return this.castList;
-            },
-            currentChangeLog() {
-                return this.changeLog;
-            },
             filteredCastList() {
-                let filteredCastList = JSON.parse(JSON.stringify(this.currentCastList));
+                let filteredCastList = JSON.parse(JSON.stringify(this.castList));
 
                 if (this.filter_piece_name === '' && this.filter_dancer_name !== '') {
                     // only dancer filter
@@ -75,7 +70,7 @@
                 return filteredCastList;
             },
             filteredChangeLog() {
-                let filteredChangeLog = JSON.parse(JSON.stringify(this.currentChangeLog));
+                let filteredChangeLog = JSON.parse(JSON.stringify(this.changeLog));
 
                 if (this.filter_piece_name === '' && this.filter_dancer_name !== '') {
                     // only dancer filter
@@ -111,6 +106,7 @@
         created() {
             this.loadData({node: 'cast_list', mutation: 'cast_list/setCastList'});
             this.loadData({node: 'change_log', mutation: 'cast_list/setChangeLog'});
+            this.loadData({node: 'metadata', mutation: 'setMetadata'});
         }
     }
 </script>

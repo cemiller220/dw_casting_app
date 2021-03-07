@@ -2,67 +2,69 @@ export default {
     // calculate and set dancer overlap and allowed next
     async calculateQuickChanges(context, payload) {
         // check if quick changes exist and if they need to be updated
-        context.dispatch('loadData', {node: 'update_times', mutation: 'setUpdateTimes'}, {root: true})
-            .then(() => {
-                const update_times = context.rootGetters.updateTimes;
+        // context.dispatch('loadData', {node: 'update_times', mutation: 'setUpdateTimes'}, {root: true})
+        //     .then(() => {
+        //         const update_times = context.rootGetters.updateTimes;
 
-                if ((payload.force) || (!update_times) || (Object.keys(update_times).indexOf('quick_change_calc') === -1) || (Object.keys(update_times).indexOf('cast_list') === -1) || (update_times.quick_change_calc < update_times.cast_list)) {
+                // if ((payload.force) || (!update_times) || (Object.keys(update_times).indexOf('quick_change_calc') === -1) || (Object.keys(update_times).indexOf('cast_list') === -1) || (update_times.quick_change_calc < update_times.cast_list)) {
+
                     // cast has changed, recalculate
-                    context.dispatch('loadData', {node: 'cast_list', mutation: 'cast_list/setCastList'}, {root: true}).then(() => {
-                        const cast_list = context.rootGetters['cast_list/castList'];
-                        const dancer_overlap = {};
-                        const allowed_next = {};
-                        for (let piece1 of cast_list) {
-                            let dance1 = piece1.name;
-                            allowed_next[dance1] = [];
-                            dancer_overlap[dance1] = {};
-                            for (let piece2 of cast_list) {
-                                let dance2 = piece2.name;
-                                if (piece1.name !== piece2.name) {
-                                    let cast1 = piece1.cast.filter((dancer) => dancer.status === 'cast').map((dancer) => {
-                                        return dancer.name
-                                    });
-                                    let cast2 = piece2.cast.filter((dancer) => dancer.status === 'cast').map((dancer) => {
-                                        return dancer.name
-                                    });
-                                    const overlap = cast1.filter(value => cast2.includes(value));
-                                    dancer_overlap[dance1][dance2] = overlap;
-                                    if (overlap.length === 0) {
-                                        allowed_next[dance1].push(dance2);
-                                    }
-                                }
-                            }
+        console.log(payload);
+        context.dispatch('loadData', {node: 'cast_list', mutation: 'cast_list/setCastList'}, {root: true}).then(() => {
+            const cast_list = context.rootGetters['cast_list/castList'];
+            const dancer_overlap = {};
+            const allowed_next = {};
+            for (let piece1 of cast_list) {
+                let dance1 = piece1.name;
+                allowed_next[dance1] = [];
+                dancer_overlap[dance1] = {};
+                for (let piece2 of cast_list) {
+                    let dance2 = piece2.name;
+                    if (piece1.name !== piece2.name) {
+                        let cast1 = piece1.cast.filter((dancer) => dancer.status === 'cast').map((dancer) => {
+                            return dancer.name
+                        });
+                        let cast2 = piece2.cast.filter((dancer) => dancer.status === 'cast').map((dancer) => {
+                            return dancer.name
+                        });
+                        const overlap = cast1.filter(value => cast2.includes(value));
+                        dancer_overlap[dance1][dance2] = overlap;
+                        if (overlap.length === 0) {
+                            allowed_next[dance1].push(dance2);
                         }
-
-                        return {dancer_overlap: dancer_overlap, allowed_next: allowed_next}
-                    }).then((data) => {
-                        context.dispatch('uploadData', {node: 'dancer_overlap', data: data.dancer_overlap}, {root: true});
-                        context.dispatch('uploadData', {node: 'allowed_next', data: data.allowed_next}, {root: true});
-
-                        context.dispatch('uploadData', {node: 'update_times/quick_change_calc', data: Date.now()}, {root: true});
-
-                        context.commit('setDancerOverlap', data.dancer_overlap);
-                        context.commit('setAllowedNext', data.allowed_next);
-                    }).then(() => {
-                        context.dispatch('loadData', {node: 'show_order', mutation: 'show_order/setAllShowOrders'}, {root: true}).then(() => {
-                            const all_show_orders = context.getters.allShowOrders;
-                            for (let ind=0; ind<all_show_orders.length; ind++) {
-                                context.dispatch('calculateShowOrderStats', {show_order: all_show_orders[ind].showOrder}).then((stats) => {
-                                    all_show_orders[ind].stats = stats;
-                                });
-                            }
-                            return all_show_orders;
-                        }).then((all_show_orders) => {
-                            context.dispatch('uploadData', {node: 'show_order', data: all_show_orders}, {root: true});
-                            context.commit('setAllShowOrders', all_show_orders);
-                        })
-                    })
-                } else {
-                    // no new updates, so just load
-                    context.dispatch('loadData', {node: 'dancer_overlap', mutation: 'show_order/setDancerOverlap'}, {root: true});
-                    context.dispatch('loadData', {node: 'allowed_next', mutation: 'show_order/setAllowedNext'}, {root: true});
+                    }
                 }
+            }
+
+            return {dancer_overlap: dancer_overlap, allowed_next: allowed_next}
+        }).then((data) => {
+            context.dispatch('uploadData', {node: 'dancer_overlap', data: data.dancer_overlap}, {root: true});
+            context.dispatch('uploadData', {node: 'allowed_next', data: data.allowed_next}, {root: true});
+
+            // context.dispatch('uploadData', {node: 'update_times/quick_change_calc', data: Date.now()}, {root: true});
+
+            context.commit('setDancerOverlap', data.dancer_overlap);
+            context.commit('setAllowedNext', data.allowed_next);
+        }).then(() => {
+            context.dispatch('loadData', {node: 'show_order', mutation: 'show_order/setAllShowOrders'}, {root: true}).then(() => {
+                const all_show_orders = context.getters.allShowOrders;
+                for (let ind=0; ind<all_show_orders.length; ind++) {
+                    context.dispatch('calculateShowOrderStats', {show_order: all_show_orders[ind].showOrder}).then((stats) => {
+                        all_show_orders[ind].stats = stats;
+                    });
+                }
+                return all_show_orders;
+            }).then((all_show_orders) => {
+                context.dispatch('uploadData', {node: 'show_order', data: all_show_orders}, {root: true});
+                context.commit('setAllShowOrders', all_show_orders);
             })
+        })
+                // } else {
+                //     // no new updates, so just load
+                //     context.dispatch('loadData', {node: 'dancer_overlap', mutation: 'show_order/setDancerOverlap'}, {root: true});
+                //     context.dispatch('loadData', {node: 'allowed_next', mutation: 'show_order/setAllowedNext'}, {root: true});
+                // }
+            // })
     },
     // get quick changes around a piece
     getQuickChanges(context, payload) {

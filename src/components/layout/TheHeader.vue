@@ -31,9 +31,6 @@
             </div>
             <div>
                 <form class="d-flex" @submit.prevent>
-<!--                    <div class="login-button" v-if="!loggedIn">-->
-<!--                        <button class="btn btn-outline-light" @click="auth({mode: 'login', email: email, password: password})">Login</button>-->
-<!--                    </div>-->
                     <select class="form-select form-control me-2 city-select" aria-label="city"
                             @change="updateConfig('city', $event.target.value)">
                         <option value :selected="currentCity === ''">Choose a City</option>
@@ -49,21 +46,14 @@
             </div>
         </div>
     </nav>
-    <div class="row justify-content-center" v-if="!loggedIn">
-        <div class="col-auto">
-            <base-button @click="auth({mode: 'login', email: email, password: password})">LOGIN</base-button>
-        </div>
-    </div>
 
 </template>
 
 <script>
     import { mapGetters, mapActions } from 'vuex';
-    import BaseButton from "../UI/BaseButton";
 
     export default {
         name: "TheHeader",
-        components: {BaseButton},
         data() {
             return {
                 email: 'dwcasting@test.com',
@@ -71,7 +61,7 @@
             }
         },
         computed: {
-            ...mapGetters(['city', 'season', 'nyc_seasons', 'boston_seasons', 'loggedIn']),
+            ...mapGetters(['city', 'season', 'nyc_seasons', 'boston_seasons']),
             currentCity() {
                 return this.city;
             },
@@ -104,9 +94,8 @@
             }
         },
         methods: {
-            ...mapActions(['changeCitySeason', 'auth']),
+            ...mapActions(['changeCitySeason']),
             updateConfig(field, value) {
-                console.log('update method');
                 if (field === 'city') {
                     this.changeCitySeason({city: value, season: this.currentSeason})
                 } else if (field === 'season') {
@@ -124,9 +113,5 @@
 
     .season-select {
         width: 130px;
-    }
-
-    .login-button {
-        margin: 0 0.5rem;
     }
 </style>

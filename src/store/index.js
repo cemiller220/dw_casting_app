@@ -4,8 +4,6 @@ import cast_list from "./modules/cast_list";
 import show_order from "./modules/show_order";
 import prefs from "./modules/prefs";
 
-// eslint-disable-next-line no-unused-vars
-let timer;
 
 export default createStore({
   state() {
@@ -13,10 +11,8 @@ export default createStore({
       season: '',
       city: '',
       possible_seasons: {'nyc': [], 'boston': []},
-      updateTimes: {},
-      loggedIn: false,
-      userId: null,
-      token: null,
+      metadata: null,
+      updateTimes: {}
     }
   },
   mutations: {
@@ -28,36 +24,34 @@ export default createStore({
     setUpdateTimes(state, payload) {
       state.updateTimes = payload;
     },
-    setUser(state, payload) {
-      state.token = payload.token;
-      state.userId = payload.userId;
-      state.loggedIn = payload.loggedIn;
-    },
+    setMetadata(state, payload) {
+      state.metadata = payload;
+    }
   },
   actions: {
     async uploadData(context, payload) {
       // this uploads data from the payload
       const city = context.getters.city;
       const season = context.getters.season;
-      const token = context.getters.token;
 
-      const response = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/${city}/season${season}/${payload.node}.json?auth=${token}`, {
+      const args = city && season ? `?city=${city}&season=${season}` : '';
+
+      const response = await fetch(`https://cemiller220.pythonanywhere.com/api/${payload.node}${args}`, {
         method: 'PUT',
         body: JSON.stringify(payload.data)
       });
 
-      const responseData = await response.json();
-
       if (!response.ok) {
-        throw new Error(responseData.message || 'Failed to send!');
+        throw new Error(response.statusText || 'Failed to send!');
       }
     },
     async loadData(context, payload) {
       const city = context.getters.city;
       const season = context.getters.season;
-      const token = context.getters.token;
 
-      const response = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/${city}/season${season}/${payload.node}.json?auth=${token}`);
+      const args = city && season ? `?city=${city}&season=${season}` : '';
+      const response = await fetch(`https://cemiller220.pythonanywhere.com/api/${payload.node}${args}`);
+
       const responseData = await response.json();
 
       console.log('load ' + payload.node + ' city ' + city + ' season ' + season);
@@ -71,23 +65,17 @@ export default createStore({
       }
     },
     async uploadConfig(context, payload) {
-      const token = context.getters.token;
-
-      const response = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/current_config.json?auth=${token}`, {
+      const response = await fetch(`https://cemiller220.pythonanywhere.com/config`, {
         method: 'PUT',
         body: JSON.stringify(payload)
       });
 
-      const responseData = await response.json();
-
       if (!response.ok) {
-        throw new Error(responseData.message || 'Failed to send!');
+        throw new Error(response.statusText || 'Failed to send!');
       }
     },
     async loadConfig(context) {
-      const token = context.getters.token;
-
-      const response = await fetch(`https://dw-casting-default-rtdb.firebaseio.com/current_config.json?auth=${token}`);
+      const response = await fetch(`https://cemiller220.pythonanywhere.com/config`);
       const responseData = await response.json();
 
       console.log('load config');
@@ -114,6 +102,7 @@ export default createStore({
     },
     updateCurrentPageData(context, payload) {
       console.log('update');
+      context.dispatch('loadData', {node: 'metadata', mutation: 'setMetadata'});
       if (payload.current_path === '/cast_list') {
         context.dispatch('loadData', {node: 'cast_list', mutation: 'cast_list/setCastList'});
         context.dispatch('loadData', {node: 'change_log', mutation: 'cast_list/setChangeLog'});
@@ -126,75 +115,6 @@ export default createStore({
           context.dispatch('prefs/inializeData')
         });
       }
-    },
-    async auth(context, payload) {
-      const mode = payload.mode;
-      const apiKey = 'AIzaSyAhaLnWgFoUhx3AZnDm24lCbcjZ68skDzc';
-
-      const url_type = mode === 'login' ? 'signInWithPassword' : 'signUp';
-      let url = `https://identitytoolkit.googleapis.com/v1/accounts:${url_type}?key=${apiKey}`;
-
-      const response = await fetch(url, {
-        method: 'POST',
-        body: JSON.stringify({
-          email: payload.email,
-          password: payload.password,
-          returnSecureToken: true
-        })
-      });
-
-      const responseData = await response.json();
-      if (!response.ok) {
-        throw new Error(responseData.message || 'Problem signing up')
-      }
-
-      const expiresIn = +responseData.expiresIn * 1000;
-      const expirationDate = new Date().getTime() + expiresIn;
-
-      localStorage.setItem('token', responseData.idToken);
-      localStorage.setItem('userId', responseData.localId);
-      localStorage.setItem('tokenExpiration', expirationDate);
-
-      timer = setTimeout(() => {
-        context.commit('setUser', {
-          token: null,
-          userId: null,
-          loggedIn: false
-        });
-      }, expiresIn);
-
-      context.commit('setUser', {
-        token: responseData.idToken,
-        userId: responseData.localId,
-        loggedIn: true
-      })
-    },
-    autoLogin(context) {
-      const token = localStorage.getItem('token');
-      const userId = localStorage.getItem('userId');
-      const tokenExpiration = localStorage.getItem('tokenExpiration');
-      const expiresIn = +tokenExpiration - new Date().getTime();
-
-      if (expiresIn < 0) {
-        return
-      }
-      timer = setTimeout(() => {
-        context.commit('setUser', {
-          token: null,
-          userId: null,
-          loggedIn: false
-        });
-      }, expiresIn);
-
-
-      if (token && userId) {
-        context.commit('setUser', {
-          token: token,
-          userId: userId,
-          loggedIn: true
-        })
-      }
-
     }
   },
   getters: {
@@ -213,17 +133,11 @@ export default createStore({
     boston_seasons(state) {
       return state.possible_seasons.boston;
     },
+    metadata(state) {
+      return state.metadata;
+    },
     updateTimes(state) {
       return state.updateTimes
-    },
-    loggedIn(state) {
-      return state.loggedIn;
-    },
-    userId(state) {
-      return state.userId;
-    },
-    token(state) {
-      return state.token;
     }
   },
   modules: {
@@ -234,5 +148,4 @@ export default createStore({
 })
 
 
-// todo: setup casting functionality with no auto-suggestions
-// todo: add auto-suggestions
+// todo: add rehearsal schedule to metadata, and use to sort cast list

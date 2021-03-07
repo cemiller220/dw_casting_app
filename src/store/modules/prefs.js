@@ -11,11 +11,9 @@ export default {
             currentStatuses: {},
             currentCast: {},
             keepDrop: {},
+            allDancerValid: null,
             prefsValid: {},
-            lastChanges: [{name: 'name1', piece: 'piece1', type: 'add'},
-                {name: 'name2', piece: 'piece2', type: 'drop'},
-                {name: 'name3', piece: 'piece3 with a really long name', type: 'drop'}
-                ],
+            lastChanges: [],
             rehearsalSchedule: null,
             showDropped: true,
             view: 'list'
@@ -42,6 +40,9 @@ export default {
         },
         setKeepDrop(state, payload) {
             state.keepDrop = payload;
+        },
+        setAllDancerValid(state, payload) {
+            state.allDancerValid = payload || null;
         },
         setPrefsValid(state, payload) {
             state.prefsValid = payload;
@@ -92,6 +93,7 @@ export default {
                     });
             } else if (current_path === '/run_casting') {
                 current_pref = context.getters.dancerPrefsAll[0];
+                context.dispatch('calculateAllDancerValid');
                 context.dispatch('calculateStatuses', {currentPref: current_pref})
                     .then((statuses) => {
                         console.log(statuses);
@@ -332,19 +334,56 @@ export default {
                 context.commit('setPrefsValid', valid);
             })
         },
+        calculateAllDancerValid(context) {
+            let all_dancer_valid = {};
+            const cast_list = context.rootGetters['cast_list/castList'];
+            const days = context.getters.piece_days;
+            const times = context.getters.piece_times;
+            context.getters.dancerPrefsAll.forEach((pref) => {
+                let all_cast_days = [];
+                let day_times = [];
+                let num_cast = 0;
+                let same_time = false;
+                let done = true;
+                pref.prefs.forEach((piece) => {
+                    let cast_status = cast_list.find(cast => cast.name === piece).cast.find(dancer => dancer.name === pref.name);
+                    if (cast_status && cast_status.status === 'cast') {
+                        num_cast++;
+                        if (all_cast_days.indexOf(days[piece]) === -1) {
+                            all_cast_days.push(days[piece]);
+                        }
+                        if (day_times.indexOf(days[piece] + times[piece]) !== -1) {
+                            same_time = true;
+                        } else {
+                            day_times.push(days[piece] + times[piece])
+                        }
+                    } else if (cast_status && cast_status.status === 'waitlist') {
+                        done = false;
+                    }
+                });
+
+                if (pref.max_days < all_cast_days.length) {
+                    done = false;
+                }
+
+                if (pref.max_dances < num_cast) {
+                    done = false;
+                }
+
+                all_dancer_valid[pref.name] = {num_days_cast: all_cast_days.length, num_dances_cast: num_cast, same_time: same_time, done: done};
+            });
+            console.log(all_dancer_valid);
+            context.commit('setAllDancerValid', all_dancer_valid);
+        },
         validateCasting(context, payload) {
             console.log('validate');
-            let days = {};
-            let times = {};
-            context.getters.choreographerPrefsAll.forEach((pref) => {
-                days[pref.name] = pref.time.day;
-                times[pref.name] = pref.time.time;
-            });
+            const days = context.getters.piece_days;
+            const times = context.getters.piece_times;
+
             let all_cast_days = [];
             let day_times = [];
             let num_cast = 0;
             let same_time = false;
-            console.log(payload.keepDrop);
             Object.keys(payload.keepDrop).forEach((piece) => {
                 if (payload.keepDrop[piece] === 'keep' && payload.statuses[piece].status === 'cast') {
                     num_cast++;
@@ -360,13 +399,14 @@ export default {
                 }
             });
 
-            let max_days = 'less';
+            let max_days = 'match';
             let done = false;
             if (payload.current_pref.max_days < all_cast_days.length) {
                 max_days = 'more'
-            } else if (payload.current_pref.max_days === all_cast_days.length) {
-                max_days = 'match';
             }
+            // else if (payload.current_pref.max_days === all_cast_days.length) {
+            //     max_days = 'match';
+            // }
 
             let max_dances = 'less';
             if (payload.current_pref.max_dances < num_cast) {
@@ -491,6 +531,12 @@ export default {
         keepDrop(state) {
             return state.keepDrop;
         },
+        allDancerValid(state) {
+            return state.allDancerValid;
+        },
+        validCalculated(state) {
+            return Object.keys(state.allDancerValid).length !== 0;
+        },
         prefsValid(state) {
             return state.prefsValid;
         },
@@ -505,6 +551,20 @@ export default {
         },
         view(state) {
             return state.view;
+        },
+        piece_days(state) {
+            let days = {};
+            state.choreographerPrefsAll.forEach((pref) => {
+                days[pref.name] = pref.time.day;
+            });
+            return days;
+        },
+        piece_times(state) {
+            let times = {};
+            state.choreographerPrefsAll.forEach((pref) => {
+                times[pref.name] = pref.time.time;
+            });
+            return times;
         }
     }
 }

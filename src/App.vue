@@ -31,7 +31,6 @@
   export default {
     components: {TheHeader},
     beforeCreate() {
-      this.$store.dispatch('autoLogin');
       this.$store.dispatch('loadConfig');
     }
   }

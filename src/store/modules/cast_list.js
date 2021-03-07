@@ -8,7 +8,7 @@ export default {
     },
     mutations: {
         setCastList(state, payload) {
-            state.castList = payload || [];
+            state.castList = payload || {};
         },
         setChangeLog(state, payload) {
             state.changeLog = payload || [];
@@ -72,7 +72,7 @@ export default {
 
             await context.dispatch('uploadData', {node: 'change_log', data: context.getters.changeLog}, {root: true});
 
-            await context.dispatch('uploadData', {node: 'update_times/cast_list', data: Date.now()}, {root: true});
+            // await context.dispatch('uploadData', {node: 'update_times/cast_list', data: Date.now()}, {root: true});
         },
         async undoChange(context, payload) {
             const pieceIndex = context.getters.castList
@@ -113,7 +113,7 @@ export default {
 
             await context.dispatch('uploadData', {node: 'change_log', data: context.getters.changeLog}, {root: true});
 
-            await context.dispatch('uploadData', {node: 'update_times/cast_list', data: Date.now()}, {root: true});
+            // await context.dispatch('uploadData', {node: 'update_times/cast_list', data: Date.now()}, {root: true});
         },
         async resetAll(context) {
             await context.dispatch('loadData', {node: 'original_cast_list', mutation: 'cast_list/setCastList'}, {root: true});
@@ -123,7 +123,7 @@ export default {
             await context.commit('setChangeLog', null);
             await context.dispatch('uploadData', {node: 'change_log', data: context.getters.changeLog}, {root: true});
 
-            await context.dispatch('uploadData', {node: 'update_times/cast_list', data: Date.now()}, {root: true});
+            // await context.dispatch('uploadData', {node: 'update_times/cast_list', data: Date.now()}, {root: true});
         }
     },
     getters: {
