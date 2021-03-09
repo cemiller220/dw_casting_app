@@ -45,8 +45,8 @@
             }
         },
         computed: {
-            ...mapGetters(['rehearsal_schedule_list']),
-            ...mapGetters('cast_list', ['castList', 'pieces', 'dancers', 'changeLog']),
+            ...mapGetters(['pieces']),
+            ...mapGetters('cast_list', ['castList', 'dancers', 'changeLog']),
             filteredCastList() {
                 let filteredCastList = JSON.parse(JSON.stringify(this.castList));
 

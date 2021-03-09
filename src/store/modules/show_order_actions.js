@@ -1,71 +1,4 @@
 export default {
-    // calculate and set dancer overlap and allowed next
-    async calculateQuickChanges(context, payload) {
-        // check if quick changes exist and if they need to be updated
-        // context.dispatch('loadData', {node: 'update_times', mutation: 'setUpdateTimes'}, {root: true})
-        //     .then(() => {
-        //         const update_times = context.rootGetters.updateTimes;
-
-                // if ((payload.force) || (!update_times) || (Object.keys(update_times).indexOf('quick_change_calc') === -1) || (Object.keys(update_times).indexOf('cast_list') === -1) || (update_times.quick_change_calc < update_times.cast_list)) {
-
-                    // cast has changed, recalculate
-        console.log(payload);
-        context.dispatch('loadData', {node: 'cast_list', mutation: 'cast_list/setCastList'}, {root: true}).then(() => {
-            const cast_list = context.rootGetters['cast_list/castList'];
-            const dancer_overlap = {};
-            const allowed_next = {};
-            for (let piece1 of cast_list) {
-                let dance1 = piece1.name;
-                allowed_next[dance1] = [];
-                dancer_overlap[dance1] = {};
-                for (let piece2 of cast_list) {
-                    let dance2 = piece2.name;
-                    if (piece1.name !== piece2.name) {
-                        let cast1 = piece1.cast.filter((dancer) => dancer.status === 'cast').map((dancer) => {
-                            return dancer.name
-                        });
-                        let cast2 = piece2.cast.filter((dancer) => dancer.status === 'cast').map((dancer) => {
-                            return dancer.name
-                        });
-                        const overlap = cast1.filter(value => cast2.includes(value));
-                        dancer_overlap[dance1][dance2] = overlap;
-                        if (overlap.length === 0) {
-                            allowed_next[dance1].push(dance2);
-                        }
-                    }
-                }
-            }
-
-            return {dancer_overlap: dancer_overlap, allowed_next: allowed_next}
-        }).then((data) => {
-            context.dispatch('uploadData', {node: 'dancer_overlap', data: data.dancer_overlap}, {root: true});
-            context.dispatch('uploadData', {node: 'allowed_next', data: data.allowed_next}, {root: true});
-
-            // context.dispatch('uploadData', {node: 'update_times/quick_change_calc', data: Date.now()}, {root: true});
-
-            context.commit('setDancerOverlap', data.dancer_overlap);
-            context.commit('setAllowedNext', data.allowed_next);
-        }).then(() => {
-            context.dispatch('loadData', {node: 'show_order', mutation: 'show_order/setAllShowOrders'}, {root: true}).then(() => {
-                const all_show_orders = context.getters.allShowOrders;
-                for (let ind=0; ind<all_show_orders.length; ind++) {
-                    context.dispatch('calculateShowOrderStats', {show_order: all_show_orders[ind].showOrder}).then((stats) => {
-                        all_show_orders[ind].stats = stats;
-                    });
-                }
-                return all_show_orders;
-            }).then((all_show_orders) => {
-                context.dispatch('uploadData', {node: 'show_order', data: all_show_orders}, {root: true});
-                context.commit('setAllShowOrders', all_show_orders);
-            })
-        })
-                // } else {
-                //     // no new updates, so just load
-                //     context.dispatch('loadData', {node: 'dancer_overlap', mutation: 'show_order/setDancerOverlap'}, {root: true});
-                //     context.dispatch('loadData', {node: 'allowed_next', mutation: 'show_order/setAllowedNext'}, {root: true});
-                // }
-            // })
-    },
     // get quick changes around a piece
     getQuickChanges(context, payload) {
         let quick_changes = {
@@ -119,8 +52,6 @@ export default {
             }
         }
     },
-
-
     async addToShowOrder(context, payload) {
         const index = context.getters.selectedIndex;
         // check if piece is already in the show order
@@ -162,7 +93,7 @@ export default {
         } else if (piece_after !== '' && piece_after !== 'INTERMISSION') {
             allowed_dances = allowed_next[piece_after];
         } else {
-            allowed_dances = context.getters.pieces;
+            allowed_dances = context.rootGetters.pieces;
         }
 
         return allowed_dances
@@ -198,7 +129,7 @@ export default {
     },
     async smartSuggest(context) {
         const current_show_order = context.getters.showOrder;
-        const remaining_pieces = context.getters.pieces.filter(piece => !current_show_order.includes(piece));
+        const remaining_pieces = context.rootGetters.pieces.filter(piece => !current_show_order.includes(piece));
 
         let options = [];
         for (let ind = 0; ind < 30; ind++) {
@@ -258,57 +189,50 @@ export default {
             '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 'INTERMISSION', '', '', '', '','', '', '', '', '', '', '', '', '', ''
         ]);
         context.commit('setSelectedIndex', null);
-        context.dispatch('calculateQuickChanges', {force: false});
     },
     editShowOrder(context) {
-        // context.commit('setCurrentShowOrder', context.getters.showOrder);
         context.commit('setView', 'edit');
         context.commit('setSelectedIndex', null);
-        context.dispatch('calculateQuickChanges', {force: false});
     },
     saveShowOrder(context) {
-        context.commit('setView', 'main');
+        context.commit('setView', 'all');
         context.commit('setSelectedIndex', null);
-        context.dispatch('calculateShowOrderStats', {show_order: context.getters.showOrder}).then((stats) => {
-            let current_show_orders = context.getters.allShowOrders;
-            current_show_orders.push({
-                showOrder: context.getters.showOrder,
-                stats: stats
-            });
-            context.dispatch('uploadData',
-                {
-                    node: 'show_order',
-                    data: current_show_orders
+        context.commit('setSelectedShowOrderIndex', null);
+        context.dispatch('calculateData',
+            {
+                functionName: 'save_new_show_order',
+                data: {show_order: context.getters.showOrder},
+                keyMutationPairs: {'all_show_orders': 'show_order/setAllShowOrders'}
                 },
-                {root: true});
-            context.commit('setSelectedShowOrderIndex', current_show_orders.length-1);
-        });
-
+            {root: true})
     },
     deleteShowOrder(context) {
         context.commit('setView', 'all');
         context.commit('setSelectedIndex', null);
-
-        context.getters.allShowOrders.splice(context.getters.selectedShowOrderIndex, 1);
-        context.dispatch('uploadData',
+        context.dispatch('calculateData',
             {
-                node: 'show_order',
-                data: context.getters.allShowOrders
+                functionName: 'delete_show_order',
+                data: {show_order_index: context.getters.selectedShowOrderIndex},
+                keyMutationPairs: {'all_show_orders': 'show_order/setAllShowOrders'}
             },
-            {root: true}
-        );
+            {root: true});
         context.commit('setSelectedShowOrderIndex', null);
     },
-    async resetAll(context) {
-        await context.dispatch('loadData', {node: 'real_show_order', mutation: 'show_order/setShowOrder'}, {root: true});
-        await context.dispatch('calculateQuickChanges', {force: false});
-        await context.dispatch('calculateShowOrderStats', {show_order: context.getters.showOrder}).then((stats) => {
-            return [{showOrder: context.getters.showOrder, stats: stats}];
-        }).then((all_show_orders) => {
-            context.dispatch('uploadData', {node: 'show_order', data: all_show_orders}, {root: true});
-            context.commit('setAllShowOrders', all_show_orders);
-        });
-    },
+    // todo: fix reset function
+    // async resetAll(context) {
+        // await context.dispatch('loadData', {node: 'real_show_order', mutation: 'show_order/setShowOrder'}, {root: true});
+        // await context.dispatch('calculateData', {
+        //     functionName: 'show_order',
+        //     keyMutationPairs: {dancer_overlap: 'show_order/setDancerOverlap', allowed_next: 'show_order/setAllowedNext', all_show_orders: 'show_order/setAllShowOrders'},
+        //     force: false
+        // }, {root: true});
+        // await context.dispatch('calculateShowOrderStats', {show_order: context.getters.showOrder}).then((stats) => {
+        //     return [{showOrder: context.getters.showOrder, stats: stats}];
+        // }).then((all_show_orders) => {
+        //     context.dispatch('uploadData', {node: 'all_show_orders', data: all_show_orders}, {root: true});
+        //     context.commit('setAllShowOrders', all_show_orders);
+        // });
+    // },
     incrementIndex(context, payload) {
         const new_index = context.getters.selectedIndex + payload.value;
         if (context.getters.showOrder[new_index] === 'INTERMISSION') {
@@ -322,29 +246,8 @@ export default {
             }
         }
     },
-    async calculateShowOrderStats(context, payload) {
-        const show_order = payload.show_order;
-        let num_back_to_back = 0;
-        let num_one_between = 0;
-        let num_two_between = 0;
-        for (let currentIndex=0; currentIndex<show_order.length; currentIndex++) {
-            if (show_order[currentIndex] !== 'INTERMISSION' && show_order[currentIndex] !== '') {
-                await context.dispatch('getQuickChanges', {
-                    currentIndex: currentIndex,
-                    currentPiece: show_order[currentIndex],
-                    showOrder: show_order
-                }).then((quick_changes) => {
-                    num_back_to_back += quick_changes['after'][0].dancers.length;
-                    num_one_between += quick_changes['after'][1].dancers.length;
-                    num_two_between += quick_changes['after'][2].dancers.length;
-                })
-            }
-        }
-
-        return {num_back_to_back, num_one_between, num_two_between}
-    },
     selectOption(context, payload) {
-        context.commit('setShowOrder', context.getters.allShowOrders[payload.index].showOrder);
+        context.commit('setShowOrder', context.getters.allShowOrders[payload.index].show_order);
         context.commit('setView', 'main');
         context.commit('setSelectedShowOrderIndex', payload.index);
     },
@@ -353,3 +256,5 @@ export default {
     },
 }
 
+// todo: add recalculation of show order stats after each quick change calculation update
+//  (or add it into the quick_change function in backend and have it also return that?)

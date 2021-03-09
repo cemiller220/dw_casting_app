@@ -49,14 +49,16 @@
             }
         },
         methods: {
-            ...mapActions(['loadData']),
-            ...mapActions('show_order', ['calculateQuickChanges', 'resetAll'])
+            ...mapActions(['calculateData']),
+            ...mapActions('show_order', ['resetAll'])
         },
         created() {
             console.log('view: ' + this.view);
-            this.loadData({node: 'show_order', mutation: 'show_order/setAllShowOrders'});
-            this.loadData({node: 'pieces', mutation: 'show_order/setPieces'});
-            this.calculateQuickChanges({force: false});
+            this.calculateData({
+                functionName: 'show_order',
+                keyMutationPairs: {dancer_overlap: 'show_order/setDancerOverlap', allowed_next: 'show_order/setAllowedNext', all_show_orders: 'show_order/setAllShowOrders'},
+                force: true
+            })
         }
     }
 </script>

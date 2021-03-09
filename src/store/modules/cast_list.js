@@ -141,13 +141,6 @@ export default {
             }
             return dancer_list.sort();
         },
-        pieces(state) {
-            const piece_list = [];
-            for (let piece of state.castList) {
-                piece_list.push(piece.name);
-            }
-            return piece_list.sort();
-        },
         changeLog(state) {
             return state.changeLog;
         }

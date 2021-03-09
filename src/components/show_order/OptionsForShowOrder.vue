@@ -33,7 +33,8 @@
         name: "OptionsForShowOrder",
         components: {BaseButton, BaseBadge},
         computed: {
-            ...mapGetters('show_order', ['pieces', 'showOrder', 'availableOptions', 'takenOptions', 'smartOptions', 'selectedIndex']),
+            ...mapGetters(['pieces']),
+            ...mapGetters('show_order', ['showOrder', 'availableOptions', 'takenOptions', 'smartOptions', 'selectedIndex']),
             showSmartSuggest() {
                 return this.availableOptions.length === 0 && this.selectedIndex !== null && this.showOrder.indexOf('') !== -1
             }

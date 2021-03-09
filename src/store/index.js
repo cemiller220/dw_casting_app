@@ -4,6 +4,8 @@ import cast_list from "./modules/cast_list";
 import show_order from "./modules/show_order";
 import prefs from "./modules/prefs";
 
+// const api_prefix = 'https://cemiller220.pythonanywhere.com';
+const api_prefix = 'http://127.0.0.1:5000';
 
 export default createStore({
   state() {
@@ -36,7 +38,7 @@ export default createStore({
 
       const args = city && season ? `?city=${city}&season=${season}` : '';
 
-      const response = await fetch(`https://cemiller220.pythonanywhere.com/api/${payload.node}${args}`, {
+      const response = await fetch(`${api_prefix}/api/${payload.node}${args}`, {
         method: 'PUT',
         body: JSON.stringify(payload.data)
       });
@@ -50,7 +52,7 @@ export default createStore({
       const season = context.getters.season;
 
       const args = city && season ? `?city=${city}&season=${season}` : '';
-      const response = await fetch(`https://cemiller220.pythonanywhere.com/api/${payload.node}${args}`);
+      const response = await fetch(`${api_prefix}/api/${payload.node}${args}`);
 
       const responseData = await response.json();
 
@@ -65,7 +67,7 @@ export default createStore({
       }
     },
     async uploadConfig(context, payload) {
-      const response = await fetch(`https://cemiller220.pythonanywhere.com/config`, {
+      const response = await fetch(`${api_prefix}/config`, {
         method: 'PUT',
         body: JSON.stringify(payload)
       });
@@ -75,7 +77,7 @@ export default createStore({
       }
     },
     async loadConfig(context) {
-      const response = await fetch(`https://cemiller220.pythonanywhere.com/config`);
+      const response = await fetch(`${api_prefix}/config`);
       const responseData = await response.json();
 
       console.log('load config');
@@ -90,11 +92,41 @@ export default createStore({
       // update all data on current page
       context.dispatch('updateCurrentPageData', {current_path: router.currentRoute.value.path});
     },
+    async calculateData(context, payload) {
+      const city = context.getters.city;
+      const season = context.getters.season;
+
+      const force = payload.force ? '&force=true' : '';
+      const args = city && season ? `?city=${city}&season=${season}${force}` : '';
+      let api_payload = {method: 'GET'};
+      if (payload.data) {
+        api_payload = {
+          method: 'PUT',
+          body: JSON.stringify(payload.data)
+        };
+      }
+
+      const response = await fetch(`${api_prefix}/calculation/${payload.functionName}${args}`, api_payload);
+
+      const responseData = await response.json();
+
+      console.log('calculate ' + payload.functionName + ' city ' + city + ' season ' + season);
+      console.log(responseData);
+
+      if (!response.ok) {
+        throw new Error(responseData.message || 'Failed to fetch!');
+      } else {
+        Object.keys(payload.keyMutationPairs).forEach((key) => {
+          context.commit(payload.keyMutationPairs[key], responseData[key])
+        });
+        return true;
+      }
+    },
     async changeCitySeason(context, payload) {
       payload.possible_seasons = context.getters.possible_seasons;
       context.commit('setCitySeason', payload);
 
-      // send config to firebase
+      // send config to backend
       await context.dispatch('uploadConfig', payload);
 
       // update all data on current page
@@ -107,9 +139,11 @@ export default createStore({
         context.dispatch('loadData', {node: 'cast_list', mutation: 'cast_list/setCastList'});
         context.dispatch('loadData', {node: 'change_log', mutation: 'cast_list/setChangeLog'});
       } else if (payload.current_path === '/show_order') {
-        context.dispatch('loadData', {node: 'show_order', mutation: 'show_order/setAllShowOrders'});
-        context.dispatch('loadData', {node: 'pieces', mutation: 'show_order/setPieces'});
-        context.dispatch('show_order/calculateQuickChanges', {force: false});
+        context.dispatch('calculateData', {
+          functionName: 'show_order',
+          keyMutationPairs: {dancer_overlap: 'show_order/setDancerOverlap', allowed_next: 'show_order/setAllowedNext', all_show_orders: 'show_order/setAllShowOrders'},
+          force: false
+        });
       } else if (['/prefs/dancer', '/prefs/choreographer', '/run_casting'].indexOf(payload.current_path) !== -1) {
         context.dispatch('prefs/loadAllData').then(() => {
           context.dispatch('prefs/inializeData')
@@ -138,6 +172,18 @@ export default createStore({
     },
     updateTimes(state) {
       return state.updateTimes
+    },
+    pieces(state) {
+      let pieces = [];
+      Object.values(state.metadata.rehearsal_schedule).forEach((time_slot_value) => {
+        Object.values(time_slot_value).forEach((value) => {
+          value.forEach((piece) => {
+            pieces.push(piece);
+          })
+        })
+
+      });
+      return pieces;
     }
   },
   modules: {

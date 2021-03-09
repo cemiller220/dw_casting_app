@@ -12,7 +12,6 @@ export default {
             selectedIndex: null,
             selectedShowOrderIndex: null,
             currentQuickChanges: {},
-            pieces: [],
             availableOptions: [],
             takenOptions: [],
             smartOptions: []
@@ -45,9 +44,6 @@ export default {
         },
         addToShowOrder(state, payload) {
             state.showOrder[payload.index] = payload.piece;
-        },
-        setPieces(state, payload) {
-            state.pieces = payload
         },
         setAvailableOptions(state, payload) {
             state.availableOptions = payload;
@@ -84,9 +80,6 @@ export default {
         },
         allowedNext(state) {
             return state.allowedNext;
-        },
-        pieces(state) {
-            return state.pieces;
         },
         availableOptions(state) {
             return state.availableOptions;

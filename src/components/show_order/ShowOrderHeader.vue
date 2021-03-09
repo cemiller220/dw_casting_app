@@ -7,7 +7,7 @@
     <div class="row justify-content-center" v-if="view === 'all'">
         <div class="col-auto">
             <base-button @click="newShowOrder">New Show Order</base-button>
-            <base-button @click="calculateQuickChanges({force: true})">Refresh Quick Changes</base-button>
+            <base-button @click="calculateQuickChanges">Refresh Quick Changes</base-button>
         </div>
     </div>
     <div class="row justify-content-center" v-if="view === 'main'">
@@ -20,7 +20,7 @@
     <div class="row justify-content-center" v-if="view === 'main'">
         <div class="col-auto">
             <base-button @click="viewAllShowOrders">View All Show Orders</base-button>
-            <base-button @click="calculateQuickChanges({force: true})">Refresh Quick Changes</base-button>
+            <base-button @click="calculateQuickChanges">Refresh Quick Changes</base-button>
         </div>
     </div>
     <div class="row justify-content-center" v-if="view === 'edit'">
@@ -41,8 +41,16 @@
             ...mapGetters('show_order', ['view', 'showOrder'])
         },
         methods: {
-            ...mapActions('show_order', ['calculateQuickChanges', 'saveShowOrder', 'newShowOrder',
-                'editShowOrder', 'deleteShowOrder', 'viewAllShowOrders'])
+            ...mapActions(['calculateData']),
+            ...mapActions('show_order', ['saveShowOrder', 'newShowOrder',
+                'editShowOrder', 'deleteShowOrder', 'viewAllShowOrders']),
+            calculateQuickChanges() {
+                this.calculateData({
+                    functionName: 'show_order',
+                    keyMutationPairs: {dancer_overlap: 'show_order/setDancerOverlap', allowed_next: 'show_order/setAllowedNext', all_show_orders: 'show_order/setAllShowOrders'},
+                    force: true
+                })
+            }
         }
     }
 </script>

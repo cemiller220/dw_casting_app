@@ -9,10 +9,10 @@
             <base-card :clickable="true" @click="selectOption({index: index})">
                 <h5>Option {{ index+1 }}</h5>
                 <div class="box">
-                    <p class="show-order-detail">Show Opener: <br><base-badge :title="show_order.showOrder[0]" :clickable="false"></base-badge></p>
-                    <p class="show-order-detail">Act 1 Finale: <br><base-badge :title="show_order.showOrder[14]" :clickable="false"></base-badge></p>
-                    <p class="show-order-detail">Act 2 Opener: <br><base-badge :title="show_order.showOrder[16]" :clickable="false"></base-badge></p>
-                    <p class="show-order-detail">Act 2 Finale: <br><base-badge :title="show_order.showOrder[29]" :clickable="false"></base-badge></p>
+                    <p class="show-order-detail">Show Opener: <br><base-badge :title="show_order.show_order[0]" :clickable="false"></base-badge></p>
+                    <p class="show-order-detail">Act 1 Finale: <br><base-badge :title="show_order.show_order[14]" :clickable="false"></base-badge></p>
+                    <p class="show-order-detail">Act 2 Opener: <br><base-badge :title="show_order.show_order[16]" :clickable="false"></base-badge></p>
+                    <p class="show-order-detail">Act 2 Finale: <br><base-badge :title="show_order.show_order[29]" :clickable="false"></base-badge></p>
                 </div>
                 <div class="box">
                     <p class="show-order-detail">Back to Back:
@@ -49,7 +49,7 @@
 
 <style scoped>
     .show-order-card {
-        width: 300px;
+        min-width: 300px;
     }
 
     .box {
