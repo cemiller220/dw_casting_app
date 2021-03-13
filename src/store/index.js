@@ -96,8 +96,14 @@ export default createStore({
       const city = context.getters.city;
       const season = context.getters.season;
 
-      const force = payload.force ? '&force=true' : '';
-      const args = city && season ? `?city=${city}&season=${season}${force}` : '';
+      let extra_args = '';
+      if (payload.extraArgs) {
+        payload.extraArgs.forEach((arg) => {
+          extra_args += `&${arg.key}=${arg.value}`
+        });
+      }
+
+      const args = city && season ? `?city=${city}&season=${season}${extra_args}` : '';
       let api_payload = {method: 'GET'};
       if (payload.data) {
         api_payload = {
@@ -142,7 +148,7 @@ export default createStore({
         context.dispatch('calculateData', {
           functionName: 'show_order',
           keyMutationPairs: {dancer_overlap: 'show_order/setDancerOverlap', allowed_next: 'show_order/setAllowedNext', all_show_orders: 'show_order/setAllShowOrders'},
-          force: false
+          extraArgs: [{key: 'force', value: false}]
         });
       } else if (['/prefs/dancer', '/prefs/choreographer', '/run_casting'].indexOf(payload.current_path) !== -1) {
         context.dispatch('prefs/loadAllData').then(() => {

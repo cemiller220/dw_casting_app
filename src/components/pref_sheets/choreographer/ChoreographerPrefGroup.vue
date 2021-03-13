@@ -1,5 +1,5 @@
 <template>
-    <div v-if="currentPref.prefs && currentCast">
+    <div v-if="currentPref.prefs && currentCastStatuses">
         <div class="card special-card-styles">
             <div class="card-header text-center">
                 <h5 class="h3 mb-0">{{ type }}</h5>
@@ -9,7 +9,7 @@
                     <choreographer-pref-item v-for="(dancer, index) in currentPref.prefs[type.toLowerCase()]" :key="dancer"
                                              :dancer="dancer"
                                              :index="index+startingIndex"
-                                             :status="currentCast[dancer]">
+                                             :status="currentCastStatuses[dancer]">
                     </choreographer-pref-item>
                 </ul>
             </div>
@@ -26,7 +26,7 @@
         components: {ChoreographerPrefItem},
         props: ['type'],
         computed: {
-            ...mapGetters('prefs', ['currentPref', 'currentCast']),
+            ...mapGetters('prefs', ['currentPref', 'currentCastStatuses']),
             ...mapGetters('cast_list', ['castList']),
             startingIndex() {
                 return this.type === 'Favorites'? 1 : this.currentPref.prefs.favorites.length+1;

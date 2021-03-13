@@ -9,7 +9,8 @@ export default {
             currentIndex: 0,
             currentPref: {},
             currentStatuses: {},
-            currentCast: {},
+            allCastStatuses: {},
+            currentCastStatuses: {},
             keepDrop: {},
             allDancerValid: null,
             prefsValid: {},
@@ -34,8 +35,11 @@ export default {
         setCurrentStatuses(state, payload) {
             state.currentStatuses = payload;
         },
-        setCurrentCast(state, payload) {
-            state.currentCast = payload;
+        setCurrentCastStatuses(state, payload) {
+            state.currentCastStatuses = payload;
+        },
+        setAllCastStatuses(state, payload) {
+            state.allCastStatuses = payload;
         },
         setKeepDrop(state, payload) {
             state.keepDrop = payload;
@@ -65,9 +69,23 @@ export default {
     actions: {
         async loadAllData(context) {
             console.log('load all data');
-            await context.dispatch('loadData', {node: 'dancer_prefs', mutation: 'prefs/setDancerPrefsAll'}, {root: true});
-            await context.dispatch('loadData', {node: 'cast_list', mutation: 'cast_list/setCastList'}, {root: true});
-            await context.dispatch('loadData', {node: 'choreographer_prefs', mutation: 'prefs/setChoreographerPrefsAll'}, {root: true});
+            const split_path = router.currentRoute.value.path.split('/');
+            const path = split_path[split_path.length - 1];
+            let keyMutationPairs = {
+                cast_list: 'cast_list/setCastList',
+                dancer_prefs: 'prefs/setDancerPrefsAll',
+                choreographer_prefs: 'prefs/setChoreographerPrefsAll',
+            };
+
+            if (path === 'choreographer') {
+                keyMutationPairs.all_cast_statuses = 'prefs/setAllCastStatuses'
+            }
+
+            await context.dispatch('calculateData', {
+                functionName: 'prefs',
+                keyMutationPairs: keyMutationPairs,
+                extraArgs: [{key: 'path', value: path}]
+            }, {root: true});
         },
         inializeData(context) {
             console.log('initialize data');
@@ -75,18 +93,18 @@ export default {
             let current_pref = {};
             if (current_path === '/prefs/choreographer') {
                 current_pref = context.getters.choreographerPrefsAll[0];
-                context.dispatch('calculateCurrentCast', {currentPref: current_pref}).then((cast) => {
-                    console.log(cast);
-                    context.commit('setCurrentCast', cast);
-                });
-            } else if (current_path === '/prefs/dancer') {
+                context.commit('setCurrentCastStatuses', context.getters.allCastStatuses[current_pref.name])
+            } else if (current_path === '/prefs/dancer')
+            {
                 current_pref = context.getters.dancerPrefsAll[0];
                 context.dispatch('calculateStatuses', {currentPref: current_pref})
                     .then((statuses) => {
                         console.log(statuses);
                         context.commit('setCurrentStatuses', statuses);
                     });
-            } else if (current_path === '/run_casting') {
+            }
+            else if (current_path === '/run_casting')
+            {
                 current_pref = context.getters.dancerPrefsAll[0];
                 context.dispatch('calculateAllDancerValid');
                 context.dispatch('calculateStatuses', {currentPref: current_pref})
@@ -181,11 +199,14 @@ export default {
                 const new_pref = prefs_all[new_index];
                 context.commit('setCurrentIndex', new_index);
                 context.commit('setCurrentPref', new_pref);
-                if (current_path === '/prefs/dancer') {
+                if (current_path === '/prefs/dancer')
+                {
                     context.dispatch('calculateStatuses', {currentPref: new_pref}).then((statuses) => {
                         context.commit('setCurrentStatuses', statuses);
                     });
-                } else if (current_path === '/run_casting') {
+                }
+                else if (current_path === '/run_casting')
+                {
                     context.dispatch('calculateStatuses', {currentPref: new_pref}).then((statuses) => {
                         context.commit('setCurrentStatuses', statuses);
                         return statuses;
@@ -199,11 +220,10 @@ export default {
                             })
                         })
                     });
-                } else if (current_path === '/prefs/choreographer') {
-                    context.dispatch('calculateCurrentCast', {currentPref: new_pref}).then((cast) => {
-                        console.log(cast);
-                        context.commit('setCurrentCast', cast);
-                    });
+                }
+                else if (current_path === '/prefs/choreographer')
+                {
+                    context.commit('setCurrentCastStatuses', context.getters.allCastStatuses[new_pref.name])
                 }
             }
         },
@@ -234,16 +254,6 @@ export default {
             });
 
             return statuses;
-        },
-        calculateCurrentCast(context, payload) {
-            const cast_list = context.rootGetters['cast_list/castList'];
-            const cast = cast_list.filter(piece => piece.name === payload.currentPref.name)[0].cast;
-            let cast_reformat = {};
-            cast.forEach((dancer) => {
-                cast_reformat[dancer.name] = dancer.status;
-            });
-
-            return cast_reformat;
         },
         calculateKeepDrop(context, payload) {
             console.log(payload);
@@ -520,8 +530,11 @@ export default {
         currentStatuses(state) {
             return state.currentStatuses;
         },
-        currentCast(state) {
-            return state.currentCast;
+        currentCastStatuses(state) {
+            return state.currentCastStatuses;
+        },
+        allCastStatuses(state) {
+            return state.allCastStatuses;
         },
         keepDrop(state) {
             return state.keepDrop;

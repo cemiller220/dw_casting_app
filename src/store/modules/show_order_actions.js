@@ -222,7 +222,7 @@ export default {
         context.dispatch('calculateData', {
             functionName: 'reset_show_order',
             keyMutationPairs: {all_show_orders: 'show_order/setAllShowOrders'},
-            force: false
+            extraArgs: [{key: 'force', value: false}]
         }, {root: true});
     },
     incrementIndex(context, payload) {

@@ -48,7 +48,7 @@
                 this.calculateData({
                     functionName: 'show_order',
                     keyMutationPairs: {dancer_overlap: 'show_order/setDancerOverlap', allowed_next: 'show_order/setAllowedNext', all_show_orders: 'show_order/setAllShowOrders'},
-                    force: true
+                    extraArgs: [{key: 'force', value: true}]
                 })
             }
         }
