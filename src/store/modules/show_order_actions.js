@@ -218,21 +218,13 @@ export default {
             {root: true});
         context.commit('setSelectedShowOrderIndex', null);
     },
-    // todo: fix reset function
-    // async resetAll(context) {
-        // await context.dispatch('loadData', {node: 'real_show_order', mutation: 'show_order/setShowOrder'}, {root: true});
-        // await context.dispatch('calculateData', {
-        //     functionName: 'show_order',
-        //     keyMutationPairs: {dancer_overlap: 'show_order/setDancerOverlap', allowed_next: 'show_order/setAllowedNext', all_show_orders: 'show_order/setAllShowOrders'},
-        //     force: false
-        // }, {root: true});
-        // await context.dispatch('calculateShowOrderStats', {show_order: context.getters.showOrder}).then((stats) => {
-        //     return [{showOrder: context.getters.showOrder, stats: stats}];
-        // }).then((all_show_orders) => {
-        //     context.dispatch('uploadData', {node: 'all_show_orders', data: all_show_orders}, {root: true});
-        //     context.commit('setAllShowOrders', all_show_orders);
-        // });
-    // },
+    resetShowOrder(context) {
+        context.dispatch('calculateData', {
+            functionName: 'reset_show_order',
+            keyMutationPairs: {all_show_orders: 'show_order/setAllShowOrders'},
+            force: false
+        }, {root: true});
+    },
     incrementIndex(context, payload) {
         const new_index = context.getters.selectedIndex + payload.value;
         if (context.getters.showOrder[new_index] === 'INTERMISSION') {

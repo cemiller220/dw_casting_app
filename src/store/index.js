@@ -175,14 +175,16 @@ export default createStore({
     },
     pieces(state) {
       let pieces = [];
-      Object.values(state.metadata.rehearsal_schedule).forEach((time_slot_value) => {
-        Object.values(time_slot_value).forEach((value) => {
-          value.forEach((piece) => {
-            pieces.push(piece);
+      if (state.metadata) {
+        Object.values(state.metadata.rehearsal_schedule).forEach((time_slot_value) => {
+          Object.values(time_slot_value).forEach((value) => {
+            value.forEach((piece) => {
+              pieces.push(piece);
+            })
           })
-        })
 
-      });
+        });
+      }
       return pieces;
     }
   },
@@ -193,5 +195,3 @@ export default createStore({
   }
 })
 
-
-// todo: add rehearsal schedule to metadata, and use to sort cast list

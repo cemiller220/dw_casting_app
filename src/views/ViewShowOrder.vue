@@ -19,7 +19,7 @@
     </div>
     <div class="row">
         <div class="col-auto">
-            <base-button @click="resetAll">Reset to Real Show Order</base-button>
+            <base-button @click="resetShowOrder">Reset to Real Show Order</base-button>
         </div>
     </div>
 </template>
@@ -50,7 +50,7 @@
         },
         methods: {
             ...mapActions(['calculateData']),
-            ...mapActions('show_order', ['resetAll'])
+            ...mapActions('show_order', ['resetShowOrder'])
         },
         created() {
             console.log('view: ' + this.view);

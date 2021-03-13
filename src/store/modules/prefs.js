@@ -14,7 +14,6 @@ export default {
             allDancerValid: null,
             prefsValid: {},
             lastChanges: [],
-            rehearsalSchedule: null,
             showDropped: true,
             view: 'list'
         }
@@ -56,9 +55,6 @@ export default {
                 });
             }
         },
-        setRehearsalSchedule(state, payload) {
-            state.rehearsalSchedule = payload || null;
-        },
         setShowDropped(state, payload) {
             state.showDropped = payload;
         },
@@ -72,7 +68,6 @@ export default {
             await context.dispatch('loadData', {node: 'dancer_prefs', mutation: 'prefs/setDancerPrefsAll'}, {root: true});
             await context.dispatch('loadData', {node: 'cast_list', mutation: 'cast_list/setCastList'}, {root: true});
             await context.dispatch('loadData', {node: 'choreographer_prefs', mutation: 'prefs/setChoreographerPrefsAll'}, {root: true});
-            await context.dispatch('loadData', {node: 'rehearsal_schedule', mutation: 'prefs/setRehearsalSchedule'}, {root: true});
         },
         inializeData(context) {
             console.log('initialize data');
@@ -289,7 +284,7 @@ export default {
                 // default
                 ['first', 'second', 'third'].forEach((time_slot) => {
                     ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'].forEach((day) => {
-                        let pieces = context.getters.rehearsalSchedule[time_slot][day];
+                        let pieces = context.rootGetters.metadata.rehearsal_schedule[time_slot][day];
                         if (pieces.length !== 1) {
                             if (payload.statuses[pieces[0]] && payload.statuses[pieces[1]]) {
                                 let status0 = payload.statuses[pieces[0]].status;
@@ -466,7 +461,7 @@ export default {
 
             ['first', 'second', 'third'].forEach((time_slot) => {
                 ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'].forEach((day) => {
-                    let pieces = context.getters.rehearsalSchedule[time_slot][day];
+                    let pieces = context.rootGetters.metadata.rehearsal_schedule[time_slot][day];
                     if (pieces.length !== 1) {
                         let casts = cast_list.filter(piece => pieces.indexOf(piece.name) !== -1);
                         casts[0].cast.filter(dancer1 => dancer1.status === 'cast').forEach((dancer) => {
@@ -542,9 +537,6 @@ export default {
         },
         lastChanges(state) {
             return state.lastChanges;
-        },
-        rehearsalSchedule(state) {
-            return state.rehearsalSchedule;
         },
         showDropped(state) {
             return state.showDropped;

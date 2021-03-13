@@ -1,5 +1,5 @@
 <template>
-    <casting-status-all-dancers></casting-status-all-dancers>
+<!--    <casting-status-all-dancers></casting-status-all-dancers>-->
     <div>
         <base-card>
             <pref-header type="dancer"></pref-header>
@@ -44,10 +44,10 @@
     import CalendarView from "../components/pref_sheets/dancer/calendar_view/CalendarView";
     import BaseButton from "../components/UI/BaseButton";
     import CastingChanges from "../components/pref_sheets/dancer/casting_helpers/CastingChanges";
-    import CastingStatusAllDancers from "../components/pref_sheets/dancer/casting_helpers/CastingStatusAllDancers";
+    // import CastingStatusAllDancers from "../components/pref_sheets/dancer/casting_helpers/CastingStatusAllDancers";
     export default {
         name: "DancerPrefs",
-        components: {CastingStatusAllDancers, CastingChanges, BaseButton, CalendarView, DancerPrefGroup, DancerPrefInfo, PrefHeader, BaseCard},
+        components: {CastingChanges, BaseButton, CalendarView, DancerPrefGroup, DancerPrefInfo, PrefHeader, BaseCard},
         computed: {
             ...mapGetters('prefs', ['view']),
             page() {
