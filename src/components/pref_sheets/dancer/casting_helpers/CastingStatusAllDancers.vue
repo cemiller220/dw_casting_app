@@ -1,5 +1,5 @@
 <template>
-    <base-card v-if="allDancerValid && dancerPrefsAll.length !== 0">
+    <base-card v-if="allDancerValidation && dancerPrefsAll.length !== 0">
 <!--        <div class="row">-->
 <!--            <div class="col-auto">-->
                 <table class="table table-striped">
@@ -16,12 +16,28 @@
                     <tbody>
                     <tr v-for="dancer_pref in dancerPrefsAll" :key="dancer_pref.name" >
                         <td>{{dancer_pref.name}}</td>
-                        <td class="text-center" :class="getDancesValidClass(allDancerValid[dancer_pref.name].num_dances_cast, dancer_pref.max_dances)">{{allDancerValid[dancer_pref.name].num_dances_cast}} / {{dancer_pref.max_dances}}</td>
-                        <td class="text-center" :class="getDancesValidClass(allDancerValid[dancer_pref.name].num_days_cast, dancer_pref.max_days)">{{allDancerValid[dancer_pref.name].num_days_cast}} / {{dancer_pref.max_days}}</td>
-                        <td class="text-center" :class="{'more': allDancerValid[dancer_pref.name].same_time}"><span v-if="allDancerValid[dancer_pref.name].same_time">X</span></td>
-                        <td class="text-center" :class="{'match': allDancerValid[dancer_pref.name].done}"><span v-if="allDancerValid[dancer_pref.name].done">&#10003;</span></td>
+                        <td class="text-center"
+                            :class="getDancesValidClass(allDancerValidation[dancer_pref.name].num_dances_cast, dancer_pref.max_dances)">
+                            {{allDancerValidation[dancer_pref.name].num_dances_cast}} / {{dancer_pref.max_dances}}
+                        </td>
+                        <td class="text-center"
+                            :class="getDancesValidClass(allDancerValidation[dancer_pref.name].num_days_cast, dancer_pref.max_days)">
+                            {{allDancerValidation[dancer_pref.name].num_days_cast}} / {{dancer_pref.max_days}}
+                        </td>
+                        <td class="text-center"
+                            :class="{'more': allDancerValidation[dancer_pref.name].same_time}">
+                            <span v-if="allDancerValidation[dancer_pref.name].same_time">X</span>
+                        </td>
+                        <td class="text-center"
+                            :class="{'match': allDancerValidation[dancer_pref.name].done}">
+                            <span v-if="allDancerValidation[dancer_pref.name].done">&#10003;</span>
+                        </td>
 
-                        <td class="text-center"><base-badge title="Go to Dancer" :clickable="true" @click="changePref({type: 'jump', to: dancer_pref.name})"></base-badge></td>
+                        <td class="text-center">
+                            <base-badge title="Go to Dancer" :clickable="true"
+                                        @click="changePref({type: 'jump', to: dancer_pref.name})">
+                            </base-badge>
+                        </td>
                     </tr>
                     </tbody>
                 </table>
@@ -45,7 +61,7 @@
             }
         },
         computed: {
-            ...mapGetters('prefs', ['dancerPrefsAll', 'allDancerValid', 'validCalculated']),
+            ...mapGetters('prefs', ['dancerPrefsAll', 'allDancerValidation']),
         },
         methods: {
             ...mapActions('prefs', ['changePref']),

@@ -34,12 +34,10 @@
         name: "ChoreographerPrefs",
         components: {ChoreographerPrefGroup, ChoreographerPrefInfo, BaseCard, PrefHeader},
         methods: {
-            ...mapActions('prefs', ['loadAllData', 'inializeData'])
+            ...mapActions('prefs', ['loadAllData'])
         },
         created() {
-            this.loadAllData().then(() => {
-                this.inializeData();
-            });
+            this.loadAllData();
         }
     }
 </script>

@@ -59,12 +59,10 @@
             }
         },
         methods: {
-            ...mapActions('prefs', ['loadAllData', 'inializeData', 'toggleView', 'startCasting', 'dropAllSameTime', 'calculateAllDancerValid'])
+            ...mapActions('prefs', ['loadAllData', 'toggleView', 'startCasting', 'dropAllSameTime', 'calculateAllDancerValid'])
         },
         created() {
-            this.loadAllData().then(() => {
-                this.inializeData();
-            });
+            this.loadAllData();
             if (this.$router.currentRoute.value.fullPath === '/run_casting') {
                 this.toggleView();
             }

@@ -151,9 +151,7 @@ export default createStore({
           extraArgs: [{key: 'force', value: false}]
         });
       } else if (['/prefs/dancer', '/prefs/choreographer', '/run_casting'].indexOf(payload.current_path) !== -1) {
-        context.dispatch('prefs/loadAllData').then(() => {
-          context.dispatch('prefs/inializeData')
-        });
+        context.dispatch('prefs/loadAllData');
       }
     }
   },
