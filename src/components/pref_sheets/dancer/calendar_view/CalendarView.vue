@@ -1,5 +1,5 @@
 <template>
-    <base-card v-if="currentPref && currentStatuses && metadata">
+    <base-card v-if="currentPref && currentDancerStatuses && metadata">
         <div class="row justify-content-center">
             <div class="col" v-for="day in days_order" :key="day + 'title'">
                 <base-card class="text-center">
@@ -14,7 +14,7 @@
                     <div class="item-wrapper" v-for="piece in metadata.rehearsal_schedule[time_slot][day]" :key="piece" :piece="piece" v-show="pieceIndex(piece) !== -1">
                         <dancer-pref-item :index="pieceIndex(piece)+1"
                                           :piece="piece"
-                                          :currentStatus="currentStatuses[piece]"
+                                          :currentStatus="currentDancerStatuses[piece]"
                                           :keepDrop="keepDrop[piece]"
                                           :type="type">
                         </dancer-pref-item>
@@ -43,7 +43,7 @@
         },
         computed: {
             ...mapGetters(['metadata']),
-            ...mapGetters('prefs', ['currentPref', 'currentStatuses', 'keepDrop']),
+            ...mapGetters('prefs', ['currentPref', 'currentDancerStatuses', 'keepDrop']),
         },
         methods: {
             pieceIndex(piece) {

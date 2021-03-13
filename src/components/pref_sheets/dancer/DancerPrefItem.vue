@@ -52,7 +52,7 @@
             },
             showStatusBadge() {
                 if (this.currentStatus) {
-                    return this.currentStatus.preference !== 'not preffed'
+                    return this.currentStatus.preference !== ''
                 }
                 return false;
             },

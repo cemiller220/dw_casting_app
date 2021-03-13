@@ -1,5 +1,5 @@
 <template>
-    <div v-if="currentPref.prefs && currentStatuses">
+    <div v-if="currentPref.prefs && currentDancerStatuses">
         <div class="card special-card-styles">
             <div class="card-header text-center">
                 <h5 class="h3 mb-0">Preferences</h5>
@@ -9,7 +9,7 @@
                     <dancer-pref-item v-for="(piece, index) in currentPref.prefs" :key="piece"
                                       :piece="piece"
                                       :index="index+1"
-                                      :currentStatus="currentStatuses[piece]"
+                                      :currentStatus="currentDancerStatuses[piece]"
                                       :keepDrop="keepDrop[piece]"
                                       :type="type">
                     </dancer-pref-item>
@@ -28,7 +28,7 @@
         components: {DancerPrefItem},
         props: ['type'],
         computed: {
-            ...mapGetters('prefs', ['currentPref', 'currentStatuses', 'keepDrop'])
+            ...mapGetters('prefs', ['currentPref', 'currentDancerStatuses', 'keepDrop'])
         }
     }
 </script>
