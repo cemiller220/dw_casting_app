@@ -55,13 +55,7 @@ export default {
             state.prefsValid = payload;
         },
         setLastChanges(state, payload) {
-            if (payload.type === 'replace') {
-                state.lastChanges = payload.changes;
-            } else {
-                payload.changes.forEach((change) => {
-                    state.lastChanges.unshift(change);
-                });
-            }
+            state.lastChanges = payload;
         },
         setShowDropped(state, payload) {
             state.showDropped = payload;
@@ -71,7 +65,7 @@ export default {
         }
     },
     actions: {
-        async loadAllData(context) {
+        loadAllData(context) {
             console.log('load all data');
             const split_path = router.currentRoute.value.path.split('/');
             const path = split_path[split_path.length - 1];
@@ -127,45 +121,32 @@ export default {
                 }
             });
         },
-        startCasting(context) {
-            // set choreographer prefs as cast list
-            let cast_list = [];
-            const dancer_prefs = context.getters.dancerPrefsAll.reduce((obj, item) => {
-                obj[item.name] = item.prefs;
-                return obj
-            }, {});
-            context.getters.choreographerPrefsAll.forEach((pref) => {
-                let cast = [];
-                let extra_cast = 0;
-                pref.prefs.favorites.forEach((dancer) => {
-                    if (dancer_prefs[dancer].indexOf(pref.name) !== -1) {
-                        cast.push({name: dancer, status: 'cast'})
-                    } else {
-                        extra_cast++;
-                    }
-                });
-                pref.prefs.alternates.forEach((dancer) => {
-                    if (dancer_prefs[dancer].indexOf(pref.name) !== -1) {
-                        if (extra_cast > 0) {
-                            cast.push({name: dancer, status: 'cast'});
-                            extra_cast--;
-                        } else {
-                            cast.push({name: dancer, status: 'waitlist'})
-                        }
-                    }
-                });
-                cast_list.push({
-                    name: pref.name,
-                    choreographer: pref.choreographer,
-                    time: pref.time,
-                    cast: cast
-                })
-            });
+        calculateThenInitialize(context, payload) {
+            const keyMutationPairs = {
+                cast_list: 'cast_list/setCastList',
+                dancer_prefs: 'prefs/setDancerPrefsAll',
+                choreographer_prefs: 'prefs/setChoreographerPrefsAll',
+                all_dancer_statuses: 'prefs/setAllDancerStatuses',
+                all_dancer_validation: 'prefs/setAllDancerValidation',
+                current_pref: 'prefs/setCurrentPref',
+                current_index: 'prefs/setCurrentIndex',
+                current_statuses: 'prefs/setCurrentDancerStatuses',
+                keep_drop: 'prefs/setKeepDrop',
+                changes: 'prefs/setLastChanges'
+            };
 
-            context.commit('cast_list/setCastList', cast_list, {root: true});
-            context.dispatch('uploadData', {node: 'cast_list', data: cast_list}, {root: true}).then(() => {
-                // todo: fix this!
-                // context.dispatch('inializeData');
+            context.dispatch('calculateData', {
+                functionName: payload.functionName,
+                keyMutationPairs: keyMutationPairs,
+            }, {root: true}).then(() => {
+                const current_pref = context.getters.currentPref;
+                const statuses = context.getters.currentDancerStatuses;
+                const keepDrop = context.getters.keepDrop;
+
+                context.dispatch('validateCasting', {current_pref, statuses, keepDrop}).then((valid) => {
+                    console.log(valid);
+                    context.commit('setPrefsValid', valid);
+                })
             });
         },
         changePref(context, payload) {
@@ -225,78 +206,6 @@ export default {
                 }
             }
         },
-        // calculateKeepDrop(context, payload) {
-        //     console.log(payload);
-        //     let keep_drop = {};
-        //     if (payload.current_pref.max_dances === 1) {
-        //         // if dancer only wants 1 dance, find top dance they've been cast in and drop everything below it
-        //         console.log('single dance');
-        //         let max_cast_index = -1;
-        //         for (let ind=0; ind<payload.current_pref.prefs.length; ind++) {
-        //             // find top ind
-        //             if (payload.statuses[payload.current_pref.prefs[ind]].status === 'cast') {
-        //                 max_cast_index = ind;
-        //                 break
-        //             }
-        //         }
-        //         console.log('max cast index: ' + max_cast_index);
-        //         if (max_cast_index !== -1) {
-        //             // drop everything below
-        //             Object.keys(payload.statuses).forEach((piece) => {
-        //                 if (payload.statuses[piece].status === 'cast' || payload.statuses[piece].status === 'waitlist') {
-        //                     if (payload.current_pref.prefs.indexOf(piece) > max_cast_index) {
-        //                         keep_drop[piece] = 'drop'
-        //                     } else {
-        //                         keep_drop[piece] = 'keep';
-        //                     }
-        //                 }
-        //             });
-        //         } else {
-        //             // dancer hasn't been cast in anything yet, keep all
-        //             Object.keys(payload.statuses).forEach((piece) => {
-        //                 if (payload.statuses[piece].status === 'cast' || payload.statuses[piece].status === 'waitlist') {
-        //                     keep_drop[piece] = 'keep';
-        //                 }
-        //             });
-        //         }
-        //
-        //     } else {
-        //         // default
-        //         ['first', 'second', 'third'].forEach((time_slot) => {
-        //             ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'].forEach((day) => {
-        //                 let pieces = context.rootGetters.metadata.rehearsal_schedule[time_slot][day];
-        //                 if (pieces.length !== 1) {
-        //                     if (payload.statuses[pieces[0]] && payload.statuses[pieces[1]]) {
-        //                         let status0 = payload.statuses[pieces[0]].status;
-        //                         let status1 = payload.statuses[pieces[1]].status;
-        //                         let rank0 = payload.current_pref.prefs.indexOf(pieces[0]);
-        //                         let rank1 = payload.current_pref.prefs.indexOf(pieces[1]);
-        //                         if (rank0 < rank1) {
-        //                             // if rank of pieces[0] is higher than rank of pieces[1]
-        //                             // drop pieces[1] if pieces[0] is cast
-        //                             if (status0 === 'cast' && ['cast', 'waitlist'].indexOf(status1) !== -1) {
-        //                                 keep_drop[pieces[1]] = 'drop';
-        //                             }
-        //                         } else {
-        //                             // if rank of pieces[1] is higher than rank of pieces[0]
-        //                             // drop pieces[0] if pieces[1] is cast
-        //                             if (status1 === 'cast' && ['cast', 'waitlist'].indexOf(status0) !== -1) {
-        //                                 keep_drop[pieces[0]] = 'drop';
-        //                             }
-        //                         }
-        //                     }
-        //                 }
-        //             })
-        //         });
-        //         Object.keys(payload.statuses).forEach((piece) => {
-        //             if (!keep_drop[piece] && (payload.statuses[piece].status === 'cast' || payload.statuses[piece].status === 'waitlist')) {
-        //                 keep_drop[piece] = 'keep';
-        //             }
-        //         });
-        //     }
-        //
-        //     return keep_drop;
-        // },
         updateKeepDrop(context, payload) {
             let keep_drop = context.getters.keepDrop;
             keep_drop[payload.piece] = payload.value;
@@ -309,47 +218,6 @@ export default {
                 context.commit('setPrefsValid', valid);
             })
         },
-        // calculateAllDancerValid(context) {
-        //     let all_dancer_valid = {};
-        //     const cast_list = context.rootGetters['cast_list/castList'];
-        //     const days = context.getters.piece_days;
-        //     const times = context.getters.piece_times;
-        //     context.getters.dancerPrefsAll.forEach((pref) => {
-        //         let all_cast_days = [];
-        //         let day_times = [];
-        //         let num_cast = 0;
-        //         let same_time = false;
-        //         let done = true;
-        //         pref.prefs.forEach((piece) => {
-        //             let cast_status = cast_list.find(cast => cast.name === piece).cast.find(dancer => dancer.name === pref.name);
-        //             if (cast_status && cast_status.status === 'cast') {
-        //                 num_cast++;
-        //                 if (all_cast_days.indexOf(days[piece]) === -1) {
-        //                     all_cast_days.push(days[piece]);
-        //                 }
-        //                 if (day_times.indexOf(days[piece] + times[piece]) !== -1) {
-        //                     same_time = true;
-        //                 } else {
-        //                     day_times.push(days[piece] + times[piece])
-        //                 }
-        //             } else if (cast_status && cast_status.status === 'waitlist') {
-        //                 done = false;
-        //             }
-        //         });
-        //
-        //         if (pref.max_days < all_cast_days.length) {
-        //             done = false;
-        //         }
-        //
-        //         if (pref.max_dances < num_cast) {
-        //             done = false;
-        //         }
-        //
-        //         all_dancer_valid[pref.name] = {num_days_cast: all_cast_days.length, num_dances_cast: num_cast, same_time: same_time, done: done};
-        //     });
-        //     console.log(all_dancer_valid);
-        //     context.commit('setAllDancerValid', all_dancer_valid);
-        // },
         validateCasting(context, payload) {
             console.log('validate');
             const days = context.getters.piece_days;
@@ -398,82 +266,32 @@ export default {
 
             return {max_days: max_days, max_dances: max_dances, same_time: same_time, done: done};
         },
-        dropOne(context, payload) {
-            let cast_list = context.rootGetters['cast_list/castList'];
-            let changes = [];
-
-            // remove this dancer
-            let piece_ind = cast_list.map(piece => piece.name).indexOf(payload.piece);
-            let dancer_ind = cast_list[piece_ind].cast.map(dancer => dancer.name).indexOf(payload.dancerName);
-            let dancer_status = cast_list[piece_ind].cast[dancer_ind].status;
-            cast_list[piece_ind].cast.splice(dancer_ind, 1);
-            changes.push({name: payload.dancerName, piece: payload.piece, type: 'drop'});
-
-            // if dancer was cast, add next dancer from waitlist
-            if (dancer_status === 'cast') {
-                let waitlist_ind = cast_list[piece_ind].cast.map(dancer => dancer.status).indexOf('waitlist');
-                cast_list[piece_ind].cast[waitlist_ind].status = 'cast';
-                changes.push({name: cast_list[piece_ind].cast[waitlist_ind].name, piece: payload.piece, type: 'add'});
-            }
-
-            context.commit('setLastChanges', {changes: changes, type: 'add'});
-            context.commit('cast_list/setCastList', cast_list, {root: true});
-        },
         saveChanges(context) {
             const current_pref = context.getters.currentPref;
             const keep_drop = context.getters.keepDrop;
-            // context.commit('setLastChanges', {changes: [], type: 'replace'});
 
-            Object.keys(keep_drop).forEach((piece) => {
-                if (keep_drop[piece] === 'drop') {
-                    context.dispatch('dropOne', {dancerName: current_pref.name, piece: piece})
-                }
-            });
+            context.dispatch('calculateData', {
+                functionName: 'save_pref_changes',
+                keyMutationPairs: {
+                    cast_list: 'cast_list/setCastList',
+                    changes: 'prefs/setLastChanges',
+                    all_dancer_statuses: 'prefs/setAllDancerStatuses',
+                    all_dancer_validation: 'prefs/setAllDancerValidation'
+                },
+                data: {keep_drop: keep_drop},
+                extraArgs: [{key: 'dancer_name', value: current_pref.name}]
+            }, {root: true});
 
-            // save new cast list
-            const cast_list = context.rootGetters['cast_list/castList'];
-            context.dispatch('uploadData', {node: 'cast_list', data: cast_list}, {root: true});
             // go to next dancer
             context.dispatch('changePref', {type: 'next'})
-        },
-        dropAllSameTime(context) {
-            let cast_list = context.rootGetters['cast_list/castList'];
-            let prefs_all = context.getters.dancerPrefsAll;
-            // context.commit('setLastChanges', {changes: [], type: 'replace'});
-
-            ['first', 'second', 'third'].forEach((time_slot) => {
-                ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'].forEach((day) => {
-                    let pieces = context.rootGetters.metadata.rehearsal_schedule[time_slot][day];
-                    if (pieces.length !== 1) {
-                        let casts = cast_list.filter(piece => pieces.indexOf(piece.name) !== -1);
-                        casts[0].cast.filter(dancer1 => dancer1.status === 'cast').forEach((dancer) => {
-                            if (casts[1].cast.filter(dancer2 => dancer2.status === 'cast').map(dancer2 => dancer2.name).indexOf(dancer.name) !== -1) {
-                                // if dancer in both casts
-                                console.log(dancer.name);
-                                let dancer_pref = prefs_all[prefs_all.map(pref => pref.name).indexOf(dancer.name)].prefs;
-                                if (dancer_pref.indexOf(pieces[0]) > dancer_pref.indexOf(pieces[1])) {
-                                    // drop pieces[0]
-                                    // console.log(`Drop ${dancer.name} from ${pieces[0]}`)
-                                    context.dispatch('dropOne', {dancerName: dancer.name, piece: pieces[0]})
-                                } else {
-                                    // drop pieces[1]
-                                    // console.log(`Drop ${dancer.name} from ${pieces[1]}`)
-                                    context.dispatch('dropOne', {dancerName: dancer.name, piece: pieces[1]})
-                                }
-                            }
-                        })
-                    }
-                })
-            });
-
-            context.dispatch('uploadData', {node: 'cast_list', data: context.rootGetters['cast_list/castList']}, {root: true});
-
         },
         toggleShowDropped(context) {
             context.commit('setShowDropped', !context.getters.showDropped)
         },
-        toggleView(context) {
-            if (context.getters.view === 'list') {
+        toggleView(context, payload) {
+            if (payload.view) {
+                context.commit('setView', payload.view)
+            } else if (context.getters.view === 'list') {
                 context.commit('setView', 'calendar')
             } else {
                 context.commit('setView', 'list')
@@ -546,7 +364,6 @@ export default {
     }
 }
 
-// todo: change save function to call backend and update all the data
 // todo: add preview changes option
 
 

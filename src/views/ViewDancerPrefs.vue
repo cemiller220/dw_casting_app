@@ -29,9 +29,8 @@
                 </base-card>
             </div>
         </div>
-        <base-button @click="startCasting" v-if="page === 'cast'">Start Casting</base-button>
-        <base-button @click="dropAllSameTime" v-if="page === 'cast'">dropAllSameTime</base-button>
-        <base-button @click="calculateAllDancerValid" v-if="page === 'cast'">calculateAllDancerValid</base-button>
+        <base-button @click="calculateThenInitialize({functionName: 'start_casting'})" v-if="page === 'cast'">Start Casting</base-button>
+        <base-button @click="calculateThenInitialize({functionName: 'drop_all_same_times'})" v-if="page === 'cast'">Drop All Same Times</base-button>
     </div>
 </template>
 
@@ -59,12 +58,12 @@
             }
         },
         methods: {
-            ...mapActions('prefs', ['loadAllData', 'toggleView', 'startCasting', 'dropAllSameTime', 'calculateAllDancerValid'])
+            ...mapActions('prefs', ['loadAllData', 'toggleView', 'calculateThenInitialize'])
         },
         created() {
             this.loadAllData();
             if (this.$router.currentRoute.value.fullPath === '/run_casting') {
-                this.toggleView();
+                this.toggleView({view: 'calendar'});
             }
         }
     }
