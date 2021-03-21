@@ -63,7 +63,7 @@
         created() {
             this.loadAllData();
             if (this.$router.currentRoute.value.fullPath === '/run_casting') {
-                this.toggleView({view: 'calendar'});
+                this.toggleView({new_view: 'calendar'});
             }
         }
     }
@@ -72,7 +72,7 @@
 <style scoped>
 .h-95 {
     height: 93%;
-    max-height: 250px;
+    max-height: 265px;
     overflow-y: auto;
 
 }

@@ -17,7 +17,8 @@ export default {
             prefsValid: {},
             lastChanges: [],
             showDropped: true,
-            view: 'list'
+            view: 'list',
+            casting_mode: 'finalize'
         }
     },
     mutations: {
@@ -62,6 +63,9 @@ export default {
         },
         setView(state, payload) {
             state.view = payload;
+        },
+        setCastingMode(state, payload) {
+            state.casting_mode = payload;
         }
     },
     actions: {
@@ -91,19 +95,22 @@ export default {
             context.dispatch('calculateData', {
                 functionName: 'prefs',
                 keyMutationPairs: keyMutationPairs,
-                extraArgs: [{key: 'path', value: path}]
+                extraArgs: [
+                    {key: 'path', value: path},
+                    {key: 'mode', value: context.getters.casting_mode}
+                    ]
             }, {root: true}).then(() => {
                 console.log('initialize data');
                 let current_pref = {};
                 if (path === 'choreographer') {
                     current_pref = context.getters.choreographerPrefsAll[0];
-                    context.commit('setCurrentCastStatuses', context.getters.allCastStatuses[current_pref.name])
+                    context.commit('setCurrentCastStatuses', context.getters.allCastStatuses[current_pref.name]);
                     context.commit('setCurrentPref', current_pref);
                     context.commit('setCurrentIndex', 0);
                 } else if (path === 'dancer')
                 {
                     current_pref = context.getters.dancerPrefsAll[0];
-                    context.commit('setCurrentDancerStatuses', context.getters.allDancerStatuses[current_pref.name])
+                    context.commit('setCurrentDancerStatuses', context.getters.allDancerStatuses[current_pref.name]);
                     context.commit('setCurrentPref', current_pref);
                     context.commit('setCurrentIndex', 0);
                 }
@@ -117,7 +124,6 @@ export default {
                         console.log(valid);
                         context.commit('setPrefsValid', valid);
                     })
-
                 }
             });
         },
@@ -192,7 +198,10 @@ export default {
                     context.dispatch('calculateData', {
                         functionName: 'keep_drop',
                         keyMutationPairs: {keep_drop: 'prefs/setKeepDrop'},
-                        extraArgs: [{key: 'dancer_name', value: new_pref.name}]
+                        extraArgs: [
+                            {key: 'dancer_name', value: new_pref.name},
+                            {key: 'mode', value: context.getters.casting_mode}
+                            ]
                     }, {root: true}).then(() => {
                         context.dispatch('validateCasting', {current_pref: new_pref, statuses, keepDrop: context.getters.keepDrop}).then((valid) => {
                             context.commit('setPrefsValid', valid);
@@ -289,13 +298,39 @@ export default {
             context.commit('setShowDropped', !context.getters.showDropped)
         },
         toggleView(context, payload) {
-            if (payload.view) {
-                context.commit('setView', payload.view)
+            if (payload.new_view) {
+                context.commit('setView', payload.new_view)
             } else if (context.getters.view === 'list') {
                 context.commit('setView', 'calendar')
             } else {
                 context.commit('setView', 'list')
             }
+        },
+        toggleCastingMode(context, payload) {
+            if (payload.new_mode) {
+                context.commit('setCastingMode', payload.new_mode)
+            } else if (context.getters.casting_mode === 'standard') {
+                context.commit('setCastingMode', 'finalize')
+            } else {
+                context.commit('setCastingMode', 'standard')
+            }
+
+            context.dispatch('calculateData', {
+                functionName: 'keep_drop',
+                keyMutationPairs: {keep_drop: 'prefs/setKeepDrop'},
+                extraArgs: [
+                    {key: 'dancer_name', value: context.getters.currentPref.name},
+                    {key: 'mode', value: context.getters.casting_mode}
+                ]
+            }, {root: true}).then(() => {
+                context.dispatch('validateCasting', {
+                    current_pref: context.getters.currentPref,
+                    statuses: context.getters.currentDancerStatuses,
+                    keepDrop: context.getters.keepDrop
+                }).then((valid) => {
+                    context.commit('setPrefsValid', valid);
+                })
+            });
         }
     },
     getters: {
@@ -346,6 +381,9 @@ export default {
         },
         view(state) {
             return state.view;
+        },
+        casting_mode(state) {
+            return state.casting_mode;
         },
         piece_days(state) {
             let days = {};

@@ -1,6 +1,6 @@
 <template>
     <li class="list-group-item"
-        :class="[castStatusClass, keepDrop]"
+        :class="[castStatusClass, {keepDrop: page === 'cast'}]"
         v-if="showPiece">
         <base-badge :title="index" color="blue" :clickable="false" class="float-start"></base-badge>
         {{ piece }}
@@ -58,6 +58,13 @@
             },
             showHelpers() {
                 return this.currentStatus && this.currentStatus.status !== 'dropped' && this.currentStatus.status !== ''
+            },
+            page() {
+                if (this.$router.currentRoute.value.fullPath === '/prefs/dancer') {
+                    return 'pref'
+                } else {
+                    return 'cast'
+                }
             }
         }
     }
