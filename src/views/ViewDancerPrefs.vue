@@ -58,7 +58,14 @@
             }
         },
         methods: {
-            ...mapActions('prefs', ['loadAllData', 'toggleView', 'calculateThenInitialize'])
+            ...mapActions('prefs', ['loadAllData', 'toggleView', 'calculateThenInitialize', 'refreshKeepDropCalculation'])
+        },
+        watch: {
+            $route (to){
+                if (to.fullPath === '/run_casting') {
+                    this.refreshKeepDropCalculation();
+                }
+            }
         },
         created() {
             this.loadAllData();

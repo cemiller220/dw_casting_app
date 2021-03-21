@@ -103,7 +103,7 @@ export default createStore({
         });
       }
 
-      const args = city && season ? `?city=${city}&season=${season}${extra_args}` : '';
+      const args = city && season ? `?city=${city}&season=${season}${extra_args}` : `?${extra_args}`;
       let api_payload = {method: 'GET'};
       if (payload.data) {
         api_payload = {

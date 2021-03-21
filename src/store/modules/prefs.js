@@ -215,6 +215,24 @@ export default {
                 }
             }
         },
+        refreshKeepDropCalculation(context) {
+            context.dispatch('calculateData', {
+                functionName: 'keep_drop',
+                keyMutationPairs: {keep_drop: 'prefs/setKeepDrop'},
+                extraArgs: [
+                    {key: 'dancer_name', value: context.getters.currentPref.name},
+                    {key: 'mode', value: context.getters.casting_mode}
+                ]
+            }, {root: true}).then(() => {
+                context.dispatch('validateCasting', {
+                    current_pref: context.getters.currentPref,
+                    statuses: context.getters.currentDancerStatuses,
+                    keepDrop: context.getters.keepDrop
+                }).then((valid) => {
+                    context.commit('setPrefsValid', valid);
+                })
+            });
+        },
         updateKeepDrop(context, payload) {
             let keep_drop = context.getters.keepDrop;
             keep_drop[payload.piece] = payload.value;
@@ -315,22 +333,7 @@ export default {
                 context.commit('setCastingMode', 'standard')
             }
 
-            context.dispatch('calculateData', {
-                functionName: 'keep_drop',
-                keyMutationPairs: {keep_drop: 'prefs/setKeepDrop'},
-                extraArgs: [
-                    {key: 'dancer_name', value: context.getters.currentPref.name},
-                    {key: 'mode', value: context.getters.casting_mode}
-                ]
-            }, {root: true}).then(() => {
-                context.dispatch('validateCasting', {
-                    current_pref: context.getters.currentPref,
-                    statuses: context.getters.currentDancerStatuses,
-                    keepDrop: context.getters.keepDrop
-                }).then((valid) => {
-                    context.commit('setPrefsValid', valid);
-                })
-            });
+            context.dispatch('refreshKeepDropCalculation');
         }
     },
     getters: {

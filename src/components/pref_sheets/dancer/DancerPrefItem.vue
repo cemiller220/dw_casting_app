@@ -1,6 +1,6 @@
 <template>
     <li class="list-group-item"
-        :class="[castStatusClass, {keepDrop: page === 'cast'}]"
+        :class="[castStatusClass, {keep: keepDrop === 'keep' && page === 'cast', drop: keepDrop === 'drop' && page === 'cast'}]"
         v-if="showPiece">
         <base-badge :title="index" color="blue" :clickable="false" class="float-start"></base-badge>
         {{ piece }}
