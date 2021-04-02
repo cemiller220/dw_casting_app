@@ -13,10 +13,11 @@
                 <base-card class="h-100 ">
                     <div class="item-wrapper" v-for="piece in metadata.rehearsal_schedule[time_slot][day]" :key="piece" :piece="piece" v-show="pieceIndex(piece) !== -1">
                         <dancer-pref-item :index="pieceIndex(piece)+1"
+                                          :show-dropped="showDropped"
                                           :piece="piece"
                                           :currentStatus="currentDancerStatuses[piece]"
                                           :keepDrop="keepDrop[piece]"
-                                          :type="type">
+                                          :page="page">
                         </dancer-pref-item>
                     </div>
                 </base-card>
@@ -34,7 +35,7 @@
     export default {
         name: "CalendarView",
         components: {DancerPrefItem, BaseCard},
-        props: ['type'],
+        props: ['page', 'keepDrop', 'currentPref', 'currentDancerStatuses', 'showDropped'],
         data() {
             return {
                 times_order: ['first', 'second', 'third'],
@@ -43,7 +44,6 @@
         },
         computed: {
             ...mapGetters(['metadata']),
-            ...mapGetters('prefs', ['currentPref', 'currentDancerStatuses', 'keepDrop']),
         },
         methods: {
             pieceIndex(piece) {

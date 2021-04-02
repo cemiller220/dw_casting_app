@@ -9,9 +9,10 @@
                     <dancer-pref-item v-for="(piece, index) in currentPref.prefs" :key="piece"
                                       :piece="piece"
                                       :index="index+1"
+                                      :show-dropped="showDropped"
                                       :currentStatus="currentDancerStatuses[piece]"
                                       :keepDrop="keepDrop[piece]"
-                                      :type="type">
+                                      :page="page">
                     </dancer-pref-item>
                 </ul>
             </div>
@@ -21,15 +22,11 @@
 
 <script>
     import DancerPrefItem from "./DancerPrefItem";
-    import {mapGetters} from "vuex";
 
     export default {
         name: "DancerPrefGroup",
         components: {DancerPrefItem},
-        props: ['type'],
-        computed: {
-            ...mapGetters('prefs', ['currentPref', 'currentDancerStatuses', 'keepDrop'])
-        }
+        props: ['page', 'keepDrop', 'currentPref', 'currentDancerStatuses', 'showDropped'],
     }
 </script>
 

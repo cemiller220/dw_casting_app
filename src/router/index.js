@@ -8,7 +8,7 @@ const routes = [
   {path: '/prefs/dancer', name: 'DancerPrefs',
     component: () => import('../views/ViewDancerPrefs.vue')},
   {path: '/run_casting', name: 'RunCasting',
-    component: () => import('../views/ViewDancerPrefs.vue')},
+    component: () => import('../views/ViewRunCasting.vue')},
   {path: '/show_order', name: 'ShowOrder',
     component: () => import('../views/ViewShowOrder.vue')},
   {path: '/cast_list', name: 'ViewCastList',

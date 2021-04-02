@@ -3,6 +3,7 @@ import router from "../router";
 import cast_list from "./modules/cast_list";
 import show_order from "./modules/show_order";
 import prefs from "./modules/prefs";
+import run_casting from "./modules/run_casting";
 
 // const api_prefix = 'https://cemiller220.pythonanywhere.com';
 const api_prefix = 'http://127.0.0.1:5000';
@@ -103,6 +104,10 @@ export default createStore({
         });
       }
 
+      if (Object.keys(payload.keyMutationPairs).indexOf('keep_drop') !== -1) {
+        context.commit(payload.keyMutationPairs['keep_drop'], {})
+      }
+
       const args = city && season ? `?city=${city}&season=${season}${extra_args}` : `?${extra_args}`;
       let api_payload = {method: 'GET'};
       if (payload.data) {
@@ -112,6 +117,7 @@ export default createStore({
         };
       }
 
+      console.log('functionName: ' + payload.functionName);
       const response = await fetch(`${api_prefix}/calculation/${payload.functionName}${args}`, api_payload);
 
       const responseData = await response.json();
@@ -123,6 +129,8 @@ export default createStore({
         throw new Error(responseData.message || 'Failed to fetch!');
       } else {
         Object.keys(payload.keyMutationPairs).forEach((key) => {
+          console.log(key);
+          console.log(responseData[key]);
           context.commit(payload.keyMutationPairs[key], responseData[key])
         });
         return true;
@@ -150,8 +158,10 @@ export default createStore({
           keyMutationPairs: {dancer_overlap: 'show_order/setDancerOverlap', allowed_next: 'show_order/setAllowedNext', all_show_orders: 'show_order/setAllShowOrders'},
           extraArgs: [{key: 'force', value: false}]
         });
-      } else if (['/prefs/dancer', '/prefs/choreographer', '/run_casting'].indexOf(payload.current_path) !== -1) {
+      } else if (['/prefs/dancer', '/prefs/choreographer'].indexOf(payload.current_path) !== -1) {
         context.dispatch('prefs/loadAllData');
+      } else if (payload.current_path === '/run_casting') {
+        context.dispatch('run_casting/calculateThenInitialize', {functionName: 'keep_drop', change_direction: 'next'})
       }
     }
   },
@@ -190,12 +200,27 @@ export default createStore({
         });
       }
       return pieces;
+    },
+    piece_days(state) {
+      let days = {};
+      Object.keys(state.metadata.times).forEach((pieceName) => {
+        days[pieceName] = state.metadata.times[pieceName].day;
+      });
+      return days;
+    },
+    piece_times(state) {
+      let times = {};
+      Object.keys(state.metadata.times).forEach((pieceName) => {
+        times[pieceName] = state.metadata.times[pieceName].time;
+      });
+      return times;
     }
   },
   modules: {
     cast_list: cast_list,
     show_order: show_order,
-    prefs: prefs
+    prefs: prefs,
+    run_casting: run_casting
   }
 })
 

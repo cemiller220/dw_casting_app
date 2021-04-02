@@ -1,16 +1,16 @@
 <template>
     <li class="list-group-item"
-        :class="[castStatusClass, {keep: keepDrop === 'keep' && page === 'cast', drop: keepDrop === 'drop' && page === 'cast'}]"
+        :class="[castStatusClass, {keep: keepDrop === 'keep' && page === 'run_casting', drop: keepDrop === 'drop' && page === 'run_casting'}]"
         v-if="showPiece">
         <base-badge :title="index" color="blue" :clickable="false" class="float-start"></base-badge>
         {{ piece }}
-        <div class="row" v-if="view === 'calendar'">
-            <div class="col text-center">
-                <base-badge :title="currentStatus.rank" :color="statusBadgeColor" v-if="showStatusBadge" ></base-badge>
-            </div>
-        </div>
-        <base-badge :title="currentStatus.rank" :color="statusBadgeColor" v-else-if="showStatusBadge" class="float-end"></base-badge>
-        <div v-if="type === 'cast' && showHelpers">
+<!--        <div class="row" v-if="view === 'calendar'">-->
+<!--            <div class="col text-center">-->
+<!--                <base-badge :title="currentStatus.rank" :color="statusBadgeColor" v-if="showStatusBadge" ></base-badge>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--        <base-badge :title="currentStatus.rank" :color="statusBadgeColor" v-else-if="showStatusBadge" class="float-end"></base-badge>-->
+        <div v-if="page === 'run_casting' && showHelpers">
             <br/>
             <casting-helpers :keepDrop="keepDrop" :piece="piece"></casting-helpers>
         </div>
@@ -20,15 +20,14 @@
 
 <script>
     import BaseBadge from "../../UI/BaseBadge";
-    import {mapGetters} from 'vuex';
     import CastingHelpers from "./casting_helpers/CastingHelpers";
 
     export default {
         name: "DancerPrefItem",
         components: {CastingHelpers, BaseBadge},
-        props: ['index', 'piece', 'currentStatus', 'type', 'keepDrop'],
+        props: ['index', 'piece', 'currentStatus', 'page', 'keepDrop', 'showDropped'],
         computed: {
-            ...mapGetters('prefs', ['showDropped', 'view']),
+            // ...mapGetters('prefs', ['view']),
             castStatusClass() {
                 if (this.currentStatus) {
                     if (this.currentStatus.status === 'cast') {
@@ -58,13 +57,6 @@
             },
             showHelpers() {
                 return this.currentStatus && this.currentStatus.status !== 'dropped' && this.currentStatus.status !== ''
-            },
-            page() {
-                if (this.$router.currentRoute.value.fullPath === '/prefs/dancer') {
-                    return 'pref'
-                } else {
-                    return 'cast'
-                }
             }
         }
     }

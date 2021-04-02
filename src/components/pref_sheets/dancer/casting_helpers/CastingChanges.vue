@@ -15,7 +15,7 @@
         name: "CastingChanges",
         components: {ChangeLogItem},
         computed: {
-            ...mapGetters('prefs', ['lastChanges'])
+            ...mapGetters('run_casting', ['lastChanges'])
         }
     }
 </script>

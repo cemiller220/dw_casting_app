@@ -1,17 +1,17 @@
 <template>
     <div class="row justify-content-between">
         <div class="col-auto">
-            <base-button @click="changePrefClick({type: 'previous'})">&larr; Previous {{ jumpField }}</base-button>
+            <base-button @click="changePrefClick({change_direction: 'previous'})">&larr; Previous {{ jumpField }}</base-button>
         </div>
         <div class="col-auto">
             <label for="pieceOptions" class="form-label">Jump to {{ jumpField }}</label>
-            <input class="form-control" list="pieceOptions" v-model="jump_name" @input="changePrefClick({type: 'jump', to: jump_name})"/>
+            <input class="form-control" list="pieceOptions" v-model="jump_name" @input="changePrefClick({change_direction: 'jump', to: jump_name})"/>
             <datalist id="pieceOptions">
                 <option v-for="option in options" :key="'filter-' + option" :value="option">{{ option }}</option>
             </datalist>
         </div>
         <div class="col-auto">
-            <base-button @click="changePrefClick({type: 'next'})">Next {{ jumpField }} &rarr;</base-button>
+            <base-button @click="changePrefClick({change_direction: 'next'})">Next {{ jumpField }} &rarr;</base-button>
         </div>
     </div>
 </template>
@@ -22,7 +22,7 @@
     export default {
         name: "PrefHeader",
         components: {BaseButton},
-        props: ['type'],
+        props: ['type', 'page'],
         data() {
             return {
                 jump_name: ''
@@ -49,9 +49,14 @@
         },
         methods: {
             ...mapActions('prefs', ['changePref']),
+            ...mapActions('run_casting', ['getCastingPref']),
             changePrefClick(payload) {
-                // this.jump_name = '';
-                this.changePref(payload);
+                if (this.page === 'prefs') {
+                    this.changePref(payload);
+                } else {
+                    this.getCastingPref(payload);
+                }
+
             }
         }
     }

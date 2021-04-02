@@ -12,12 +12,12 @@
             <h4 :class="daysValidClass">Max Days: <strong>{{ currentPref.max_days }}</strong></h4>
         </div>
     </div>
-    <div class="row justify-content-center" v-if="prefsValid.same_time">
+    <div class="row justify-content-center" v-if="prefsValid && prefsValid.same_time">
         <div class="col-auto">
             <h4 class="more">Warning: Cast in 2 Pieces At Same Time</h4>
         </div>
     </div>
-    <div class="row justify-content-center" v-if="prefsValid.done">
+    <div class="row justify-content-center" v-if="prefsValid && prefsValid.done">
         <div class="col-auto">
             <h4 class="match">Done casting this dancer!</h4>
         </div>
@@ -27,16 +27,16 @@
             <h4>Notes: {{ currentPref.notes }}</h4>
         </div>
     </div>
-    <div class="row justify-content-center" v-if="page === 'cast'">
+    <div class="row justify-content-center" v-if="page === 'run_casting'">
         <div class="col-auto">
             <div class="switch-field">
                 <input type="radio" id="radio-one" name="switch-one"
                        value="standard" :checked="casting_mode === 'standard'"
-                       @change="updateCastingMode('standard')"/>
+                       @change="toggleCastingMode({new_mode: 'standard'})"/>
                 <label for="radio-one">Standard</label>
                 <input type="radio" id="radio-two" name="switch-one"
                        value="finalize" :checked="casting_mode === 'finalize'"
-                       @change="updateCastingMode('finalize')"/>
+                       @change="toggleCastingMode({new_mode: 'finalize'})"/>
                 <label for="radio-two">Finalize</label>
             </div>
         </div>
@@ -49,7 +49,7 @@
             <base-button @click="toggleView">
                 Switch to {{ view === 'list' ? 'Calendar' : 'List' }} View
             </base-button>
-            <base-button @click="saveChanges" v-if="page === 'cast'">
+            <base-button @click="saveChanges" v-if="page === 'run_casting'">
                 Save Changes
             </base-button>
         </div>
@@ -58,38 +58,33 @@
 
 <script>
     import BaseButton from "../../UI/BaseButton";
-    import {mapActions, mapGetters} from 'vuex';
+    import {mapActions} from 'vuex';
 
     export default {
         name: "DancerPrefInfo",
         components: {BaseButton},
-        props: ['type'],
+        props: ['page', 'showDropped', 'currentPref', 'view', 'prefsValid', 'casting_mode'],
         computed: {
-            ...mapGetters('prefs', ['showDropped', 'currentPref', 'view', 'prefsValid', 'casting_mode']),
             daysValidClass() {
-                if (this.type === 'cast') {
+                if (this.page === 'run_casting') {
                     return this.prefsValid.max_days
                 }
                 return ''
             },
             dancesValidClass() {
-                if (this.type === 'cast') {
+                if (this.page === 'run_casting') {
                     return this.prefsValid.max_dances
                 }
                 return ''
-            },
-            page() {
-                if (this.$router.currentRoute.value.fullPath === '/prefs/dancer') {
-                    return 'pref'
-                } else {
-                    return 'cast'
-                }
             }
         },
         methods: {
-            ...mapActions('prefs', ['toggleShowDropped', 'toggleView', 'saveChanges', 'toggleCastingMode']),
-            updateCastingMode(new_mode) {
-                this.toggleCastingMode({new_mode})
+            ...mapActions('run_casting', ['saveChanges', 'toggleCastingMode']),
+            toggleShowDropped() {
+                this.$store.dispatch(this.page + '/toggleShowDropped')
+            },
+            toggleView() {
+                this.$store.dispatch(this.page + '/toggleView')
             }
         }
     }
