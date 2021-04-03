@@ -110,7 +110,7 @@ export default createStore({
 
       const args = city && season ? `?city=${city}&season=${season}${extra_args}` : `?${extra_args}`;
       let api_payload = {method: 'GET'};
-      if (payload.data) {
+      if (payload.data && Object.keys(payload.data).length !== 0) {
         api_payload = {
           method: 'PUT',
           body: JSON.stringify(payload.data)

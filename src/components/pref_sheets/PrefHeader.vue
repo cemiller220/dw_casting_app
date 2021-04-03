@@ -49,12 +49,15 @@
         },
         methods: {
             ...mapActions('prefs', ['changePref']),
-            ...mapActions('run_casting', ['getCastingPref']),
+            ...mapActions('run_casting', ['calculateThenInitialize']),
             changePrefClick(payload) {
                 if (this.page === 'prefs') {
                     this.changePref(payload);
                 } else {
-                    this.getCastingPref(payload);
+                    this.calculateThenInitialize({
+                        ...payload,
+                        functionName: 'keep_drop'
+                    })
                 }
 
             }

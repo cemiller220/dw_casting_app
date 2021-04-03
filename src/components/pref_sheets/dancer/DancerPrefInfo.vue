@@ -49,7 +49,7 @@
             <base-button @click="toggleView">
                 Switch to {{ view === 'list' ? 'Calendar' : 'List' }} View
             </base-button>
-            <base-button @click="saveChanges" v-if="page === 'run_casting'">
+            <base-button @click="calculateThenInitialize({functionName: 'save_pref_changes'})" v-if="page === 'run_casting'">
                 Save Changes
             </base-button>
         </div>
@@ -79,7 +79,7 @@
             }
         },
         methods: {
-            ...mapActions('run_casting', ['saveChanges', 'toggleCastingMode']),
+            ...mapActions('run_casting', ['calculateThenInitialize', 'toggleCastingMode']),
             toggleShowDropped() {
                 this.$store.dispatch(this.page + '/toggleShowDropped')
             },

@@ -60,15 +60,8 @@
             ...mapGetters('run_casting', ['view', 'keepDrop', 'currentPref', 'currentDancerStatuses', 'showDropped', 'prefsValid', 'casting_mode']),
         },
         methods: {
-            ...mapActions('run_casting', ['getCastingPref', 'calculateThenInitialize'])
+            ...mapActions('run_casting', ['calculateThenInitialize'])
         },
-        // watch: {
-        //     $route (to){
-        //         if (to.fullPath === '/run_casting') {
-        //             this.getCastingPref({change_direction: 'refresh'});
-        //         }
-        //     }
-        // },
         created() {
             this.calculateThenInitialize({functionName: 'keep_drop', change_direction: 'next'});
         }

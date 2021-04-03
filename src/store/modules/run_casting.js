@@ -46,62 +46,42 @@ export default {
                 // choreographer_prefs: 'run_casting/setChoreographerPrefsAll',
                 // all_dancer_statuses: 'run_casting/setAllDancerStatuses',
                 // all_dancer_validation: 'run_casting/setAllDancerValidation',
-                current_pref: 'run_casting/setCurrentPref',
                 // current_index: 'run_casting/setCurrentIndex',
+                current_pref: 'run_casting/setCurrentPref',
                 current_statuses: 'run_casting/setCurrentDancerStatuses',
                 keep_drop: 'run_casting/setKeepDrop',
                 changes: 'run_casting/setLastChanges'
             };
 
-            let extraArgs = [];
+            let extraArgs = [{key: 'mode', value: context.getters.casting_mode}];
+            let data = {};
             if (payload.functionName === 'keep_drop') {
-                extraArgs.push({key: 'mode', value: context.getters.casting_mode});
                 extraArgs.push({key: 'change_direction', value: payload.change_direction});
+                if (payload.change_direction === 'previous' || payload.change_direction === 'next') {
+                    extraArgs.push({key: 'current_name', value: context.getters.currentPref.name})
+                } else if (payload.change_direction === 'jump') {
+                    extraArgs.push({key: 'dancer_name', value: payload.to})
+                } else if (payload.change_direction === 'refresh') {
+                    extraArgs.push({key: 'dancer_name', value: context.getters.currentPref.name})
+                }
+            } else if (payload.functionName === 'save_pref_changes') {
+                data.keep_drop = context.getters.keepDrop;
+                extraArgs.push({key: 'dancer_name', value: context.getters.currentPref.name});
             }
 
             context.dispatch('calculateData', {
                 functionName: payload.functionName,
                 keyMutationPairs: keyMutationPairs,
-                extraArgs
-            }, {root: true}).then(() => {
+                extraArgs,
+                data
+            }, {root: true})
+                .then(() => {
                 const current_pref = context.getters.currentPref;
                 const statuses = context.getters.currentDancerStatuses;
                 const keepDrop = context.getters.keepDrop;
 
                 context.dispatch('validateCasting', {current_pref, statuses, keepDrop}).then((valid) => {
                     console.log(valid);
-                    context.commit('setPrefsValid', valid);
-                })
-            });
-        },
-        getCastingPref(context, payload) {
-            let extraArgs = [
-                {key: 'change_direction', value: payload.change_direction},
-                {key: 'mode', value: context.getters.casting_mode}
-            ];
-            if (payload.change_direction === 'previous' || payload.change_direction === 'next') {
-                extraArgs.push({key: 'current_name', value: context.getters.currentPref.name})
-            } else if (payload.change_direction === 'jump') {
-                extraArgs.push({key: 'dancer_name', value: payload.to})
-            } else if (payload.change_direction === 'refresh') {
-                extraArgs.push({key: 'dancer_name', value: context.getters.currentPref.name})
-            }
-
-            context.dispatch('calculateData', {
-                functionName: 'keep_drop',
-                keyMutationPairs: {
-                    keep_drop: 'run_casting/setKeepDrop',
-                    current_pref: 'run_casting/setCurrentPref',
-                    current_statuses: 'run_casting/setCurrentDancerStatuses',
-                    changes: 'run_casting/setLastChanges'
-                },
-                extraArgs,
-            }, {root: true}).then(() => {
-                context.dispatch('validateCasting', {
-                    current_pref: context.getters.currentPref,
-                    statuses: context.getters.currentDancerStatuses,
-                    keepDrop: context.getters.keepDrop
-                }).then((valid) => {
                     context.commit('setPrefsValid', valid);
                 })
             });
@@ -166,39 +146,6 @@ export default {
                 context.commit('setPrefsValid', valid);
             })
         },
-        saveChanges(context) {
-            const current_pref = context.getters.currentPref;
-            const keep_drop = context.getters.keepDrop;
-
-            context.dispatch('calculateData', {
-                functionName: 'save_pref_changes',
-                keyMutationPairs: {
-                    keep_drop: 'run_casting/setKeepDrop',
-                    current_pref: 'run_casting/setCurrentPref',
-                    current_statuses: 'run_casting/setCurrentDancerStatuses',
-                    changes: 'run_casting/setLastChanges'
-                },
-                data: {keep_drop: keep_drop},
-                extraArgs: [
-                    {key: 'dancer_name', value: current_pref.name},
-                    {key: 'mode', value: context.getters.casting_mode}
-                    ]
-            }, {root: true}).then(() => {
-                const current_pref = context.getters.currentPref;
-                const statuses = context.getters.currentDancerStatuses;
-                const keepDrop = context.getters.keepDrop;
-
-                context.dispatch('validateCasting', {current_pref, statuses, keepDrop}).then((valid) => {
-                    console.log(valid);
-                    context.commit('setPrefsValid', valid);
-                })
-            });
-            //     .then(() => {
-            //     // go to next dancer
-            //     // context.dispatch('changePref', {type: 'next'})
-            //     context.dispatch('getCastingPref', {change_direction: 'next'})
-            // });
-        },
         toggleShowDropped(context) {
             context.commit('setShowDropped', !context.getters.showDropped)
         },
@@ -220,7 +167,7 @@ export default {
                 context.commit('setCastingMode', 'standard')
             }
 
-            context.dispatch('getCastingPref', {change_direction: 'refresh'});
+            context.dispatch('calculateThenInitialize', {functionName: 'keep_drop', change_direction: 'refresh'});
         }
     },
     getters: {
@@ -251,6 +198,9 @@ export default {
     }
 }
 
-
-// TODO: save change list on refresh? Keep one giant change list?
-// TODO: refactor code duplication --> use calculateThenInitialize function for getCastingPref and saveChanges functions
+// TODO: fix next/previous arrows, once you've done all dancers once it's an infinite loop of next and previous
+//  instead add run numbers to the data to know where we are in the list?
+// TODO: fix jump to dancer autocomplete (no list anymore since we're not loading the full prefs list)
+// TODO: separate out "last changes" vs "all changes" have a view for all changes but usually only show last changes
+// TODO: create function for loading all data that doesn't change with each dancer on refresh (such as all changes above)
+// TODO: come back to sorting on dancer prefs page (and what data is loaded on that page, make sure it's all necessary)
