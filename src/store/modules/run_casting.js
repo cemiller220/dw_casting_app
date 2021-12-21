@@ -200,6 +200,8 @@ export default {
 
 // TODO: fix next/previous arrows, once you've done all dancers once it's an infinite loop of next and previous
 //  instead add run numbers to the data to know where we are in the list?
+//  also, add skip for "done" dancers
+//  what if we changed this to calculate all dancers keep drop at start, sort by most drops, and update keep drop for dancers with changes each time theres a change
 // TODO: fix jump to dancer autocomplete (no list anymore since we're not loading the full prefs list)
 // TODO: separate out "last changes" vs "all changes" have a view for all changes but usually only show last changes
 // TODO: create function for loading all data that doesn't change with each dancer on refresh (such as all changes above)

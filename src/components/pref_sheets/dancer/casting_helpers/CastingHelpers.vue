@@ -24,7 +24,7 @@
         components: {BaseBadge},
         props: ['keepDrop', 'piece'],
         methods: {
-            ...mapActions('prefs', ['updateKeepDrop'])
+            ...mapActions('run_casting', ['updateKeepDrop'])
         }
     }
 </script>
