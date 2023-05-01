@@ -12,7 +12,7 @@
                              'cursor': piece !== 'INTERMISSION'}"
                     @click="clickItem(index)">
                     <div class="shorten-dance-name">
-                        <base-badge color="blue" :title="getNumber(index)" :clickable="false"
+                        <base-badge :color="getColor(piece)" :title="getNumber(index)" :clickable="false"
                                     :class="{'smartOption': smartOptions.includes(piece)}"
                                     v-if="piece !== 'INTERMISSION' ">
                         </base-badge>
@@ -32,6 +32,7 @@
         name: "ShowOrder",
         components: {BaseBadge},
         computed: {
+            ...mapGetters(['metadata']),
             ...mapGetters('show_order', ['showOrder', 'selectedIndex', 'smartOptions', 'view'])
         },
         methods: {
@@ -44,6 +45,19 @@
                     this.seeQuickChanges({index: index})
                 } else if (this.view === 'edit') {
                     this.seeOptions({index: index})
+                }
+            },
+            getColor(piece) {
+                if (this.metadata.styles[piece] === 'Contemp') {
+                    return 'blue'
+                } else if (this.metadata.styles[piece] === 'Hip Hop') {
+                    return 'red'
+                } else if (this.metadata.styles[piece] === 'Jazz') {
+                    return 'green'
+                } else if (this.metadata.styles[piece] === 'Tap') {
+                    return 'brown'
+                } else {
+                    return ''
                 }
             }
         }

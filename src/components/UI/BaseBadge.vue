@@ -36,12 +36,12 @@
     }
 
     .red {
-        background-color: #740C11;
+        background-color: #A11B22;
         color: white;
     }
 
     span.red.clickable:hover {
-        background-color: #360607;
+        background-color: #7B151A;
     }
 
     .green {
@@ -60,5 +60,14 @@
 
     span.blue.clickable:hover {
         background-color: #0c2739;
+    }
+
+    .brown {
+        background-color: #743C18 ;
+        color: white;
+    }
+
+    span.brown.clickable:hover {
+        background-color: #4D2911;
     }
 </style>

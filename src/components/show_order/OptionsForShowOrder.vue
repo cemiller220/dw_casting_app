@@ -9,7 +9,7 @@
     </div>
     <div class="row">
         <div class="col-auto optionBadges" v-for="piece in availableOptions" :key="piece">
-            <base-badge :title="piece" :clickable="true" color="blue"
+            <base-badge :title="piece" :clickable="true" :color="getColor(piece)"
                         @click="addToShowOrder({piece: piece})"
                         :class="{'smartOption': smartOptions.includes(piece)}">
             </base-badge>
@@ -33,7 +33,7 @@
         name: "OptionsForShowOrder",
         components: {BaseButton, BaseBadge},
         computed: {
-            ...mapGetters(['pieces']),
+            ...mapGetters(['pieces', 'metadata']),
             ...mapGetters('show_order', ['showOrder', 'availableOptions', 'takenOptions', 'smartOptions', 'selectedIndex']),
             showSmartSuggest() {
                 return this.availableOptions.length === 0 && this.selectedIndex !== null && this.showOrder.indexOf('') !== -1
@@ -41,7 +41,18 @@
         },
         methods: {
             ...mapActions(['loadData']),
-            ...mapActions('show_order', ['addToShowOrder', 'smartSuggest', 'swapSuggest'])
+            ...mapActions('show_order', ['addToShowOrder', 'smartSuggest', 'swapSuggest']),
+            getColor(piece) {
+                if (this.metadata.styles[piece] === 'Contemp') {
+                    return 'blue'
+                } else if (this.metadata.styles[piece] === 'Hip Hop') {
+                    return 'red'
+                } else if (this.metadata.styles[piece] === 'Jazz') {
+                    return 'green'
+                } else if (this.metadata.styles[piece] === 'Tap') {
+                    return 'brown'
+                }
+            }
         }
     }
 </script>
